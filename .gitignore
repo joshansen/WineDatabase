@@ -1,0 +1,7 @@
+.env
+node_modules
+examples
+*.sublime-project
+*.sublime-workspace
+npm-debug.log
+Thoughts.txt
