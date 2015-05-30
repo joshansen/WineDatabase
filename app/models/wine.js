@@ -15,6 +15,8 @@ module.exports = function(db) {
 
 		imageUrl: String,
 
+		originalImageUrl: String,
+
 		name: String,
 
 		brand: String,

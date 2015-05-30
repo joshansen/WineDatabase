@@ -1,0 +1,20 @@
+{
+	"name":"Wine Database",
+	"version":"0.0.0",
+	"author":{
+		"name":"Josh Hansen",
+		"email":"joshua.hansen.a@gmail.com",
+		"website":"http://joshansen.org"
+		},
+	"repository": {
+		"type":"git",
+		"url":"https://github.com/joshansen/WineDatabase.git",
+	},
+	"dependencies":{
+		"cdn":"",
+		"dotenv":"0.4.0",
+		"express":"4.10.6",
+		"mongoose":"3.8.21",
+		"swig":"1.4.2"
+	}
+}
