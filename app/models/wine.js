@@ -2,7 +2,6 @@ module.exports = function(db) {
     try {
         return db.model("Wine");
     } catch(e) {}
-	var WineType = require("./wineType")(db);
 	var Bottle = require("./bottle")(db);
 
 	var wineSchema = new db.schema({
@@ -21,7 +20,7 @@ module.exports = function(db) {
 
 		brand: String,
 
-		types: [WineType],
+		types: [String],
 
 		year: Number,
 
@@ -49,4 +48,4 @@ module.exports = function(db) {
 
 
 	return db.model("Wine", wineSchema);
-}
+};

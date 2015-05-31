@@ -3,18 +3,18 @@ module.exports = function(app){
 
 	exports.index = function(){
 
-	}
+	};
 	exports.show = function(){
 
-	}
+	};
 	exports.load = function(){
 
-	}
+	};
 	exports.destroy = function(){
 
-	}
+	};
 	exports.update = function(){
 
-	}
+	};
 	return exports;
 };
