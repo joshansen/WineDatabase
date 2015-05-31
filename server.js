@@ -7,7 +7,6 @@ require("dotenv").load();
 
 var db = require("./lib/db");
 
-
 db.connect(function() {
     fs.readdirSync(__dirname + "/app/models").forEach(function (file) {
         if (~file.indexOf(".js")) {
@@ -16,6 +15,12 @@ db.connect(function() {
     });
 
     var app = express();
+
+    // Bootstrap application settings
+    require("./config/express")(app);
+
+    // Bootstrap routes
+    require("./config/routes")(app);
 
     // Start the app by listening on <port>
     var port = process.env.PORT;
