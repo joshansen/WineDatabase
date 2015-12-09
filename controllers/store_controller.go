@@ -22,7 +22,7 @@ func NewStoreController(database utils.DatabaseAccessor) *StoreControllerImpl {
 }
 
 func (sc *StoreControllerImpl) Register(router *mux.Router) {
-	router.HandleFunc("/service/{id}", sc.single)
+	router.HandleFunc("/store/{id}", sc.single)
 }
 
 func (sc *StoreControllerImpl) single(w http.ResponseWriter, r *http.Request) {
