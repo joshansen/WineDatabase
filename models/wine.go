@@ -13,35 +13,35 @@ type Wine struct {
 	Id           bson.ObjectId `bson:"_id"`
 	CreatedDate  time.Time
 	ModifiedDate time.Time
+	Name         string
+	Brand        string
 	Information  string
 	//ImageUrl string
 	//OriginalImageUrl string
-	Name  string
-	Brand string
 	//Types []string
 	//Year int
 	Bottles []Bottle
 	Stores  []Stores
 }
 
-func NewWine(name, information, brand string) *Wine {
+func NewWine(name, brand, information string) *Wine {
 	return &Wine{
 		Id:           bson.NewObjectId(),
 		CreatedDate:  time.Now(),
 		ModifiedDate: time.Now(),
 		Name:         name,
+		Brand:        brand,
 		Information:  information,
 		//OriginalImageUrl: originalImageUrl,
-		Brand: brand,
 	}
 }
 
-func (w *Wine) Update(name, information, brand string) {
+func (w *Wine) Update(name, brand, information string) {
 	//need to check if variables present?
 	w.ModifiedDate = time.Now()
 	w.Name = name
-	w.Information = information
 	w.Brand = brand
+	w.Information = information
 	w.Save(db)
 }
 
