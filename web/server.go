@@ -47,7 +47,7 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 	storeController.Register(router)
 
 	s.Use(negroni.HandlerFunc(secure.New(secure.Options{
-		//TODO add allowed hosts
+		//TODO add allowed hosts, explore other options
 		//AllowedHosts:       []string{},
 		ContentTypeNosniff: true,
 		BrowserXssFilter:   true,
