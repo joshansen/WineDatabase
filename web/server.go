@@ -17,17 +17,17 @@ type Server struct {
 	*negroni.Negroni
 }
 
-func NewServer(dba utils.DatabaseAccessor, isDevelopment bool) *Server {
+func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment bool) *Server {
 	s := Server{negroni.Classic()}
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t, _ := template.ParseFiles("views/layout.html", "views/index.html")
-		t.Execute(w)
+		t.Execute(w, "")
 	})
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t, _ := template.ParseFiles("views/layout.html", "views/404.html")
-		t.Execute(w)
+		t.Execute(w, "")
 	})
 
 	storeController := controllers.NewStoreController(dba)
@@ -43,7 +43,6 @@ func NewServer(dba utils.DatabaseAccessor, isDevelopment bool) *Server {
 	}).HandlerFuncWithNext))
 	s.Use(sessions.Sessions("wineapp", cookiestore.New([]byte(sessionSecret))))
 	s.Use(middleware.NewDatabase(dba).Middleware())
-	s.Use(middleware.NewAuthenticator(dba, session, cua).Middleware())
 	s.UseHandler(router)
 
 	return &s

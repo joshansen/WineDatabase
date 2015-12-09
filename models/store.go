@@ -20,7 +20,7 @@ type Store struct {
 	Website      string
 	Lattitude    float64
 	Longitutde   float64
-	Bottles      []Bottle
+	Bottles      []bson.ObjectId
 }
 
 func NewStore(name, address, city, state, zip, website string) *Store {
@@ -45,7 +45,7 @@ func NewStore(name, address, city, state, zip, website string) *Store {
 	}
 }
 
-func (s *Store) Update(name, address, city, state, zip, website string) {
+func (s *Store) Update(name, address, city, state, zip, website string, db *mgo.Database) {
 	//need to check if variables present?
 
 	website = strings.TrimPrefix(strings.TrimPrefix(website, "http://"), "https://")
@@ -67,9 +67,9 @@ func (s *Store) Update(name, address, city, state, zip, website string) {
 	s.Save(db)
 }
 
-func (s *Store) AddBottle(bottleId bson.ObjectId) {
-	if len(w.Bottles) == 0 {
-		s.Bottles = append([]Bottle, bottleId)
+func (s *Store) AddBottle(bottleId bson.ObjectId, db *mgo.Database) {
+	if len(s.Bottles) == 0 {
+		s.Bottles = append(make([]bson.ObjectId, 3), bottleId)
 	} else {
 		s.Bottles = append(s.Bottles, bottleId)
 	}

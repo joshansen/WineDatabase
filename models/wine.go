@@ -20,8 +20,8 @@ type Wine struct {
 	//OriginalImageUrl string
 	//Types []string
 	//Year int
-	Bottles []Bottle
-	Stores  []Stores
+	Bottles []bson.ObjectId
+	Stores  []bson.ObjectId
 }
 
 func NewWine(name, brand, information string) *Wine {
@@ -36,7 +36,7 @@ func NewWine(name, brand, information string) *Wine {
 	}
 }
 
-func (w *Wine) Update(name, brand, information string) {
+func (w *Wine) Update(name, brand, information string, db *mgo.Database) {
 	//need to check if variables present?
 	w.ModifiedDate = time.Now()
 	w.Name = name
@@ -45,16 +45,16 @@ func (w *Wine) Update(name, brand, information string) {
 	w.Save(db)
 }
 
-func (w *Wine) AddBottleStore(bottleId, storeId bson.ObjectId) {
+func (w *Wine) AddBottleStore(bottleId, storeId bson.ObjectId, db *mgo.Database) {
 
 	if len(w.Bottles) == 0 {
-		w.Bottles = append([]Bottle, bottleId)
+		w.Bottles = append(make([]bson.ObjectId, 3), bottleId)
 	} else {
 		w.Bottles = append(w.Bottles, bottleId)
 	}
 
 	if len(w.Stores) == 0 {
-		w.Stores = append([]Store, storeId)
+		w.Stores = append(make([]bson.ObjectId, 3), storeId)
 	} else {
 		w.Stores = append(w.Stores, storeId)
 	}

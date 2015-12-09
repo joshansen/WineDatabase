@@ -41,7 +41,7 @@ func NewBottle(wine bson.ObjectId, store bson.ObjectId, notes string, memoryCue 
 	}
 }
 
-func (b *Bottle) Update(wine bson.ObjectId, store bson.ObjectId, notes string, memoryCue string, buyAgain bool, doWeLike bool, price float64, datePurchased time.Time, dateDrank time.Time, year int) {
+func (b *Bottle) Update(wine bson.ObjectId, store bson.ObjectId, notes string, memoryCue string, buyAgain bool, doWeLike bool, price float64, datePurchased time.Time, dateDrank time.Time, year int, db *mgo.Database) {
 	//need to check if variables present?
 	b.ModifiedDate = time.Now()
 	b.Notes = notes
