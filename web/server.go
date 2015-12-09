@@ -23,11 +23,11 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t, _ := template.ParseFiles("views/layout.html", "views/index.html")
-		t.Execute(w, "")
+		t.Execute(w, nil)
 	})
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t, _ := template.ParseFiles("views/layout.html", "views/404.html")
-		t.Execute(w, "")
+		t.Execute(w, nil)
 	})
 
 	storeController := controllers.NewStoreController(dba)

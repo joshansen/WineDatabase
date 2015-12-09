@@ -1,6 +1,6 @@
 main:
   build: .
-  command: go run
+  command: WineDatabase
   env_file: .env
   volumes:
     - ./:/go/src/github.com/joshansen/WineDatabase
