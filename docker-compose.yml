@@ -1,0 +1,14 @@
+main:
+  build: .
+  command: go run
+  env_file: .env
+  volumes:
+    - ./:/go/src/github.com/joshansen/WineDatabase
+  working_dir: /go/src/github.com/joshansen/WineDatabase
+  ports:
+    - "3000:3000"
+  links:
+    - db
+db:
+  image: mongo:3.0
+  command: mongod --smallfiles --quiet --logpath=/dev/null
