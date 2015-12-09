@@ -27,11 +27,16 @@ func (sc *StoreControllerImpl) Register(router *mux.Router) {
 
 func (sc *StoreControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 	//written below
-	data, _ := sc.get(w, r)
+	data, err := sc.get(w, r)
 
-	resultString, _ := json.Marshal(data)
-	t, _ := template.ParseFiles("views/layout.html", "views/store.html")
-	t.Execute(w, string(resultString))
+	if err != nil {
+		//TODO Fix this so it doesn't respond with only text
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	} else{
+		resultString, _ := json.Marshal(data)
+		t, _ := template.ParseFiles("views/layout.html", "views/store.html")
+		t.Execute(w, string(resultString))
+	}
 }
 
 func (sc *StoreControllerImpl) get(w http.ResponseWriter, r *http.Request) (*models.Store, error) {

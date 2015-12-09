@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/goincremental/negroni-sessions"
 	"github.com/goincremental/negroni-sessions/cookiestore"
@@ -22,12 +23,24 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		t, _ := template.ParseFiles("views/layout.html", "views/index.html")
-		t.Execute(w, nil)
+		t, err := template.ParseFiles("views/layout.html", "views/index.html")
+		if err != nil{
+			fmt.Printf("Index template wastn't parsed with error: %v", err)
+		}
+		err = t.Execute(w, nil)
+		if err != nil{
+			fmt.Printf("Index template failed to execute with error: %v", err)
+		}
 	})
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t, _ := template.ParseFiles("views/layout.html", "views/404.html")
-		t.Execute(w, nil)
+		t, err := template.ParseFiles("views/layout.html", "views/404.html")
+		if err != nil{
+			fmt.Printf("404 template wastn't parsed with error: %v", err)
+		}
+		err = t.Execute(w, nil)
+		if err != nil{
+			fmt.Printf("404 template failed to execute with error: %v", err)
+		}
 	})
 
 	storeController := controllers.NewStoreController(dba)

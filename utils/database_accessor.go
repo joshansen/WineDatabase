@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/gorilla/context"
 	"gopkg.in/mgo.v2"
+	"log"
 	"net/http"
 )
 
@@ -14,7 +15,10 @@ type DatabaseAccessor struct {
 }
 
 func NewDatabaseAccessor(url, name string, key int) *DatabaseAccessor {
-	session, _ := mgo.Dial(url)
+	session, err := mgo.Dial(url)
+	if err != nil{
+		log.Panicf("The following error occured when accessing the database: %v", err)
+	}
 
 	return &DatabaseAccessor{session, url, name, key}
 }
