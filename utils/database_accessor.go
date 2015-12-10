@@ -16,7 +16,7 @@ type DatabaseAccessor struct {
 
 func NewDatabaseAccessor(url, name string, key int) *DatabaseAccessor {
 	session, err := mgo.Dial(url)
-	if err != nil{
+	if err != nil {
 		log.Panicf("The following error occured when accessing the database: %v", err)
 	}
 

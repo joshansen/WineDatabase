@@ -24,21 +24,21 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles("views/layout.html", "views/index.html")
-		if err != nil{
+		if err != nil {
 			fmt.Printf("Index template wastn't parsed with error: %v", err)
 		}
 		err = t.Execute(w, nil)
-		if err != nil{
+		if err != nil {
 			fmt.Printf("Index template failed to execute with error: %v", err)
 		}
 	})
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles("views/layout.html", "views/404.html")
-		if err != nil{
+		if err != nil {
 			fmt.Printf("404 template wastn't parsed with error: %v", err)
 		}
 		err = t.Execute(w, nil)
-		if err != nil{
+		if err != nil {
 			fmt.Printf("404 template failed to execute with error: %v", err)
 		}
 	})

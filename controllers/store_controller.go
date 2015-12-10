@@ -3,12 +3,15 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joshansen/WineDatabase/models"
 	"github.com/joshansen/WineDatabase/utils"
+	"github.com/monoculum/formam"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
+	"time"
 )
 
 type StoreControllerImpl struct {
@@ -23,6 +26,8 @@ func NewStoreController(database utils.DatabaseAccessor) *StoreControllerImpl {
 
 func (sc *StoreControllerImpl) Register(router *mux.Router) {
 	router.HandleFunc("/store/{id}", sc.single)
+	router.HandleFunc("/store/", sc.form).Methods("GET")
+	router.HandleFunc("/store/", sc.create).Methods("POST")
 }
 
 func (sc *StoreControllerImpl) single(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +37,7 @@ func (sc *StoreControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		//TODO Fix this so it doesn't respond with only text
 		http.Error(w, err.Error(), http.StatusBadRequest)
-	} else{
+	} else {
 		resultString, _ := json.Marshal(data)
 		t, _ := template.ParseFiles("views/layout.html", "views/store.html")
 		t.Execute(w, string(resultString))
@@ -50,4 +55,22 @@ func (sc *StoreControllerImpl) get(w http.ResponseWriter, r *http.Request) (*mod
 	}
 
 	return store, nil
+}
+
+func (sc *StoreControllerImpl) form(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("views/layout.html", "views/create_store.html")
+	t.Execute(w, nil)
+}
+
+func (sc *StoreControllerImpl) create(w http.ResponseWriter, r *http.Request) {
+	co := models.Store{Id: bson.NewObjectId(), CreatedDate: time.Now()}
+	r.ParseForm()
+	if err := formam.Decode(r.Form, &co); err != nil {
+		fmt.Printf("Failed to decode form with error: %v\n", err)
+		return
+	}
+
+	co.Geocode()
+	co.Save(sc.database.Get(r))
+	http.Redirect(w, r, "/store/"+co.Id.Hex(), http.StatusSeeOther)
 }
