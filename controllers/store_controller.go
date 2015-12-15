@@ -63,14 +63,14 @@ func (sc *StoreControllerImpl) form(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sc *StoreControllerImpl) create(w http.ResponseWriter, r *http.Request) {
-	co := models.Store{Id: bson.NewObjectId(), CreatedDate: time.Now()}
+	so := models.Store{Id: bson.NewObjectId(), CreatedDate: time.Now()}
 	r.ParseForm()
-	if err := formam.Decode(r.Form, &co); err != nil {
+	if err := formam.Decode(r.Form, &so); err != nil {
 		fmt.Printf("Failed to decode form with error: %v\n", err)
 		return
 	}
 
-	co.Geocode()
-	co.Save(sc.database.Get(r))
-	http.Redirect(w, r, "/store/"+co.Id.Hex(), http.StatusSeeOther)
+	so.Geocode()
+	so.Save(sc.database.Get(r))
+	http.Redirect(w, r, "/store/"+so.Id.Hex(), http.StatusSeeOther)
 }

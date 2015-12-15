@@ -1,0 +1,52 @@
+<!-- Title -->
+{{ define "title" }}
+<title>Wine Database|Create Wine</title>
+{{ end }}
+<!-- Description -->
+{{ define "description" }}
+<meta name="description" content="Create a Wine"> {{ end }}
+<!-- Body -->
+{{ define "body" }}
+<div class="col-md-6">
+    <div class="row">
+        <h1>Add a Wine</h1>
+        <form method="POST">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="Name" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label>Winery</label>
+                <input type="text" name="Winery" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label>Variety <a href="/variety/" class="small">Add</a></label>
+                <select name="Variety" class="form-control" required>
+                    <!-- TODO Add Variety -->
+                    <option value=""></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Style</label>
+                <select name="Style" class="form-control" required>
+                    <option value="red">Red</option>
+                    <option value="rose">Rosé</option>
+                    <option value="white">White</option>
+                    <option value="dessert">Dessert</option>
+                    <option value="sparkling">Sparkling</option>
+                </select>
+            </div>
+            <!-- Region -->
+            <div class="form-group">
+                <label>Region</label>
+                <input type="text" name="Region" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Information</label>
+                <textarea name="Information" class="form-control" rows="3"></textarea>
+            </div>
+            <input type="submit" class="btn btn-default" />
+        </form>
+    </div>
+</div>
+{{ end }}

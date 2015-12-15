@@ -14,52 +14,33 @@ type Wine struct {
 	CreatedDate  time.Time
 	ModifiedDate time.Time
 	Name         string
-	Brand        string
+	Winery       string
 	Information  string
 	//ImageUrl string
 	//OriginalImageUrl string
-	//Types []string
-	//Year int
+	Variety bson.ObjectId
+	Style   string
+	Region  string
 	Bottles []bson.ObjectId
 	Stores  []bson.ObjectId
 }
 
-func NewWine(name, brand, information string) *Wine {
-	return &Wine{
-		Id:           bson.NewObjectId(),
-		CreatedDate:  time.Now(),
-		ModifiedDate: time.Now(),
-		Name:         name,
-		Brand:        brand,
-		Information:  information,
-		//OriginalImageUrl: originalImageUrl,
-	}
-}
+// func (w *Wine) Update(name, brand, information string, db *mgo.Database) error {
+// 	//need to check if variables present?
+// 	w.ModifiedDate = time.Now()
+// 	w.Name = name
+// 	w.Brand = brand
+// 	w.Information = information
+// 	return w.Save(db)
+// }
 
-func (w *Wine) Update(name, brand, information string, db *mgo.Database) {
-	//need to check if variables present?
+func (w *Wine) AddBottleStore(bottleId, storeId bson.ObjectId, db *mgo.Database) error {
 	w.ModifiedDate = time.Now()
-	w.Name = name
-	w.Brand = brand
-	w.Information = information
-	w.Save(db)
-}
 
-func (w *Wine) AddBottleStore(bottleId, storeId bson.ObjectId, db *mgo.Database) {
+	w.Bottles = append(w.Bottles, bottleId)
+	w.Stores = append(w.Stores, storeId)
 
-	if len(w.Bottles) == 0 {
-		w.Bottles = append(make([]bson.ObjectId, 3), bottleId)
-	} else {
-		w.Bottles = append(w.Bottles, bottleId)
-	}
-
-	if len(w.Stores) == 0 {
-		w.Stores = append(make([]bson.ObjectId, 3), storeId)
-	} else {
-		w.Stores = append(w.Stores, storeId)
-	}
-
-	w.Save(db)
+	return w.Save(db)
 }
 
 func (w *Wine) Save(db *mgo.Database) error {
@@ -75,5 +56,12 @@ func (*Wine) coll(db *mgo.Database) *mgo.Collection {
 	return db.C("wine")
 }
 
-//need to implement find by name, brand, year, etc.
-//could do serverside
+type Wines []Wine
+
+func (w *Wines) FindAll(db *mgo.Database) error {
+	return w.coll(db).Find(nil).All(w)
+}
+
+func (*Wines) coll(db *mgo.Database) *mgo.Collection {
+	return db.C("wine")
+}

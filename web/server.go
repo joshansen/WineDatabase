@@ -25,7 +25,7 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles("views/layout.html", "views/index.html")
 		if err != nil {
-			fmt.Printf("Index template wastn't parsed with error: %v", err)
+			fmt.Printf("Index template wasn't parsed with error: %v", err)
 		}
 		err = t.Execute(w, nil)
 		if err != nil {
@@ -35,7 +35,7 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles("views/layout.html", "views/404.html")
 		if err != nil {
-			fmt.Printf("404 template wastn't parsed with error: %v", err)
+			fmt.Printf("404 template wasn't parsed with error: %v", err)
 		}
 		err = t.Execute(w, nil)
 		if err != nil {
@@ -45,6 +45,10 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 
 	storeController := controllers.NewStoreController(dba)
 	storeController.Register(router)
+	wineController := controllers.NewWineController(dba)
+	wineController.Register(router)
+	bottleController := controllers.NewBottleController(dba)
+	bottleController.Register(router)
 
 	s.Use(negroni.HandlerFunc(secure.New(secure.Options{
 		//TODO add allowed hosts, explore other options

@@ -25,7 +25,6 @@ type geocodingResults struct {
 
 func geocode(address string) (lat float64, lng float64, err error) {
 	//can add api key with the following  + "&key=" + apiKey
-	//fmt.Println(geocodeURL + url.QueryEscape(address))
 	resp, err := http.Get(geocodeURL + url.QueryEscape(address))
 
 	if err != nil {
@@ -39,9 +38,6 @@ func geocode(address string) (lat float64, lng float64, err error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &result)
 
-	//err = json.NewDecoder(resp.Body).Decode(&result)
-	//fmt.Println(result)
-
 	if err != nil {
 		return 0, 0, fmt.Errorf("Error decoding geocoding result: <%v>", err)
 	}
@@ -53,15 +49,3 @@ func geocode(address string) (lat float64, lng float64, err error) {
 
 	return lat, lng, nil
 }
-
-// testing
-// func main() {
-// 	lat, lng, err := geocode("11130 Madison St. NE, Blaine, MN 55434")
-
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	} else {
-// 		fmt.Printf("Lat: %v\nLng: %v\n", lat, lng)
-// 	}
-
-// }
