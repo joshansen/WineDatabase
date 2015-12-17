@@ -39,15 +39,4 @@
         </form>
     </div>
 </div>
-<script>
-var querystring = "store";
-$('a').each(function() {
-    var href = $(this).attr('href') + location.search;
-
-    if (href) {
-        href += (href.match(/\?/) ? '&' : '?') + "prev=" + querystring;
-        $(this).attr('href', href);
-    }
-});
-</script>
 {{ end }}

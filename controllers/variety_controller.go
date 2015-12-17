@@ -3,11 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joshansen/WineDatabase/models"
 	"github.com/joshansen/WineDatabase/utils"
-	"github.com/monoculum/formam"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
@@ -26,8 +24,8 @@ func NewVarietyController(database utils.DatabaseAccessor) *VarietyControllerImp
 
 func (vc *VarietyControllerImpl) Register(router *mux.Router) {
 	router.HandleFunc("/variety/{id}", vc.single)
-	router.HandleFunc("/variety/", vc.form).Methods("GET")
-	router.HandleFunc("/variety/", vc.create).Methods("POST")
+	router.HandleFunc("/variety", vc.form).Methods("GET")
+	router.HandleFunc("/variety", vc.create).Methods("POST")
 }
 
 func (vc *VarietyControllerImpl) single(w http.ResponseWriter, r *http.Request) {
@@ -63,11 +61,13 @@ func (vc *VarietyControllerImpl) form(w http.ResponseWriter, r *http.Request) {
 }
 
 func (vc *VarietyControllerImpl) create(w http.ResponseWriter, r *http.Request) {
-	vo := models.Variety{Id: bson.NewObjectId(), CreatedDate: time.Now(), ModifiedDate: time.Now()}
 	r.ParseForm()
-	if err := formam.Decode(r.Form, &vo); err != nil {
-		fmt.Printf("Failed to decode form with error: %v\n", err)
-		return
+
+	vo := models.Variety{
+		Id:           bson.NewObjectId(),
+		CreatedDate:  time.Now(),
+		ModifiedDate: time.Now(),
+		Name:         r.FormValue("Name"),
 	}
 
 	vo.Save(vc.database.Get(r))

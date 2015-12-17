@@ -38,9 +38,19 @@ func (w *Wine) AddBottleStore(bottleId, storeId bson.ObjectId, db *mgo.Database)
 	w.ModifiedDate = time.Now()
 
 	w.Bottles = append(w.Bottles, bottleId)
-	w.Stores = append(w.Stores, storeId)
+	//Appends only if store not already present
+	w.Stores = appendIfMissing(w.Stores, storeId)
 
 	return w.Save(db)
+}
+
+func appendIfMissing(slice []bson.ObjectId, i bson.ObjectId) []bson.ObjectId {
+	for _, ele := range slice {
+		if ele == i {
+			return slice
+		}
+	}
+	return append(slice, i)
 }
 
 func (w *Wine) Save(db *mgo.Database) error {

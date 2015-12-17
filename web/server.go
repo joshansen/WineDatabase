@@ -53,8 +53,8 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 	varietyController.Register(router)
 
 	s.Use(negroni.HandlerFunc(secure.New(secure.Options{
-		//TODO add allowed hosts, explore other options
-		//AllowedHosts:       []string{},
+		//Explore other options
+		AllowedHosts:       []string{"www.winedatabase.org", "winedatabase.org"},
 		ContentTypeNosniff: true,
 		BrowserXssFilter:   true,
 		FrameDeny:          true,

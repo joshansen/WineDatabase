@@ -31,8 +31,8 @@ func NewBottleController(database utils.DatabaseAccessor) *BottleControllerImpl 
 //create a function to register the bottle urls
 func (bc *BottleControllerImpl) Register(router *mux.Router) {
 	router.HandleFunc("/bottle/{id}", bc.single)
-	router.HandleFunc("/bottle/", bc.form).Methods("GET")
-	router.HandleFunc("/bottle/", bc.create).Methods("POST")
+	router.HandleFunc("/bottle", bc.form).Methods("GET")
+	router.HandleFunc("/bottle", bc.create).Methods("POST")
 }
 
 //servethe bottle.html page
@@ -217,6 +217,6 @@ func uploadToS3(file multipart.File, header *multipart.FileHeader) (url string) 
 	}
 
 	//return the image url
-	url = "https://s3.amazonaws.com/winedatabase/" + filename
+	url = "http://data.winedatabase.org/" + filename
 	return
 }

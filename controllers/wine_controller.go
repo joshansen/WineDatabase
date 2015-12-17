@@ -25,8 +25,8 @@ func NewWineController(database utils.DatabaseAccessor) *WineControllerImpl {
 
 func (wc *WineControllerImpl) Register(router *mux.Router) {
 	router.HandleFunc("/wine/{id}", wc.single)
-	router.HandleFunc("/wine/", wc.form).Methods("GET")
-	router.HandleFunc("/wine/", wc.create).Methods("POST")
+	router.HandleFunc("/wine", wc.form).Methods("GET")
+	router.HandleFunc("/wine", wc.create).Methods("POST")
 }
 
 func (wc *WineControllerImpl) single(w http.ResponseWriter, r *http.Request) {

@@ -3,11 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joshansen/WineDatabase/models"
 	"github.com/joshansen/WineDatabase/utils"
-	"github.com/monoculum/formam"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
@@ -26,8 +24,8 @@ func NewStoreController(database utils.DatabaseAccessor) *StoreControllerImpl {
 
 func (sc *StoreControllerImpl) Register(router *mux.Router) {
 	router.HandleFunc("/store/{id}", sc.single)
-	router.HandleFunc("/store/", sc.form).Methods("GET")
-	router.HandleFunc("/store/", sc.create).Methods("POST")
+	router.HandleFunc("/store", sc.form).Methods("GET")
+	router.HandleFunc("/store", sc.create).Methods("POST")
 }
 
 func (sc *StoreControllerImpl) single(w http.ResponseWriter, r *http.Request) {
@@ -63,11 +61,18 @@ func (sc *StoreControllerImpl) form(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sc *StoreControllerImpl) create(w http.ResponseWriter, r *http.Request) {
-	so := models.Store{Id: bson.NewObjectId(), CreatedDate: time.Now()}
 	r.ParseForm()
-	if err := formam.Decode(r.Form, &so); err != nil {
-		fmt.Printf("Failed to decode form with error: %v\n", err)
-		return
+
+	so := models.Store{
+		Id:           bson.NewObjectId(),
+		CreatedDate:  time.Now(),
+		ModifiedDate: time.Now(),
+		Name:         r.FormValue("Name"),
+		Address:      r.FormValue("Address"),
+		City:         r.FormValue("City"),
+		State:        r.FormValue("State"),
+		Zip:          r.FormValue("Zip"),
+		Website:      r.FormValue("Website"),
 	}
 
 	so.Geocode()

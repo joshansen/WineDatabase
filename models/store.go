@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"net/url"
 	"time"
 )
 
@@ -17,7 +16,7 @@ type Store struct {
 	City         string
 	State        string
 	Zip          string
-	Website      url.URL
+	Website      string
 	Lattitude    float64
 	Longitutde   float64
 	Bottles      []bson.ObjectId

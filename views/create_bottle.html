@@ -13,7 +13,7 @@
         <form method="POST" enctype="multipart/form-data">
             <!-- Wine -->
             <div class="form-group">
-                <label>Wine <a href="/wine/" class="small">Add</a></label>
+                <label>Wine <a href="/wine?prev=bottle" class="small">Add</a></label>
                 <select name="Wine" class="form-control" required>
                     {{range $wine := .Wines}}
                     <option value="{{$wine.Id.Hex}}">{{$wine.Name}} - {{$wine.Winery}}</option>
@@ -29,7 +29,7 @@
             </div>
             <!-- Store -->
             <div class="form-group">
-                <label>Store <a href="/store/" class="small">Add</a></label>
+                <label>Store <a href="/store?prev=bottle" class="small">Add</a></label>
                 <select name="Store" class="form-control" required>
                     {{range $store := .Stores}}
                     <option value="{{$store.Id.Hex}}">{{$store.Name}} - {{$store.City}}</option>
@@ -95,15 +95,6 @@ function readURL(input) {
 }
 $("#image-input").change(function() {
     readURL(this);
-});
-var querystring = "bottle";
-$('a').each(function() {
-    var href = $(this).attr('href') + location.search;
-
-    if (href) {
-        href += (href.match(/\?/) ? '&' : '?') + "prev=" + querystring;
-        $(this).attr('href', href);
-    }
 });
 </script>
 {{ end }}

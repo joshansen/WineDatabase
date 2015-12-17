@@ -20,7 +20,7 @@
                 <input type="text" name="Winery" class="form-control" required />
             </div>
             <div class="form-group">
-                <label>Variety <a href="/variety/" class="small">Add</a></label>
+                <label>Variety <a href="/variety?prev=wine" class="small">Add</a></label>
                 <select name="Variety" class="form-control" required>
                     {{range $variety := .}}
                     <option value="{{$variety.Id.Hex}}">{{$variety.Name}}</option>
@@ -50,15 +50,4 @@
         </form>
     </div>
 </div>
-<script>
-var querystring = "wine";
-$('a').each(function() {
-    var href = $(this).attr('href') + location.search;
-
-    if (href) {
-        href += (href.match(/\?/) ? '&' : '?') + "prev=" + querystring;
-        $(this).attr('href', href);
-    }
-});
-</script>
 {{ end }}
