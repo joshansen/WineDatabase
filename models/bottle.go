@@ -7,21 +7,22 @@ import (
 )
 
 type Bottle struct {
-	Id           bson.ObjectId `bson:"_id"`
-	CreatedDate  time.Time
-	ModifiedDate time.Time
-	Wine         bson.ObjectId
-	Store        bson.ObjectId
-	Rating       int
-	BuyAgain     bool
-	//Is this the proper type
-	Price         float64
-	DatePurchased time.Time
-	DateDrank     time.Time
-	MemoryCue     string
-	Year          int
-	Notes         string
-	OnSale        bool
+	Id               bson.ObjectId `bson:"_id"`
+	CreatedDate      time.Time
+	ModifiedDate     time.Time
+	Wine             bson.ObjectId
+	Store            bson.ObjectId
+	Rating           int
+	BuyAgain         bool
+	Price            float64
+	DatePurchased    time.Time
+	DateDrank        time.Time
+	MemoryCue        string
+	Year             int
+	Notes            string
+	OnSale           bool
+	ImageOriginalURL string
+	ImageResizedURL  string
 }
 
 // func (b *Bottle) Update(wine bson.ObjectId, store bson.ObjectId, notes string, memoryCue string, buyAgain bool, doWeLike bool, price float64, datePurchased time.Time, dateDrank time.Time, year int, db *mgo.Database) {

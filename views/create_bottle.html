@@ -10,11 +10,11 @@
 <div class="col-md-6">
     <div class="row">
         <h1>Add a Bottle</h1>
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <!-- Wine -->
             <div class="form-group">
                 <label>Wine <a href="/wine/" class="small">Add</a></label>
-                <select name="Wine" class="form-control">
+                <select name="Wine" class="form-control" required>
                     {{range $wine := .Wines}}
                     <option value="{{$wine.Id.Hex}}">{{$wine.Name}} - {{$wine.Winery}}</option>
                     {{end}}
@@ -24,13 +24,13 @@
             <div class="form-group">
                 <label>Year</label>
                 <div class="input-group">
-                    <input type="number" value="2015" min="1800" step="1" data-number-to-fixed="2" class="form-control currency" name="Year" />
+                    <input type="number" value="2015" min="1800" step="1" data-number-to-fixed="2" class="form-control currency" name="Year" required/>
                 </div>
             </div>
             <!-- Store -->
             <div class="form-group">
                 <label>Store <a href="/store/" class="small">Add</a></label>
-                <select name="Store" class="form-control">
+                <select name="Store" class="form-control" required>
                     {{range $store := .Stores}}
                     <option value="{{$store.Id.Hex}}">{{$store.Name}} - {{$store.City}}</option>
                     {{end}}
@@ -38,7 +38,7 @@
             </div>
             <div class="form-group">
                 <label>Rating</label>
-                <input name="Rating" type="range" min="0" max="5" step="1">
+                <input name="Rating" type="range" min="0" max="5" step="1" required>
             </div>
             <div class="checkbox">
                 <label>
@@ -49,12 +49,12 @@
                 <label>Price</label>
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
-                    <input type="number" value="10.00" min="0" step="0.01" data-number-to-fixed="2" class="form-control currency" name="Price" />
+                    <input type="number" value="10.00" min="0" step="0.01" data-number-to-fixed="2" class="form-control currency" name="Price" required/>
                 </div>
             </div>
             <div class="checkbox">
                 <label>
-                    <input name="OnSale" type="checkbox">On Sale
+                    <input name="OnSale" type="checkbox">On Sale When Purchased
                 </label>
             </div>
             <div class="form-group">
@@ -73,8 +73,37 @@
                 <label>Notes</label>
                 <textarea name="Notes" class="form-control" rows="3"></textarea>
             </div>
+            <div class="form-group">
+                <label>Image</label>
+                <input name="Image" type="file" accept="image/*" id="image-input"></input>
+                <img id="image-preview" alt="Image Preview" height="60" class="hidden">
+            </div>
             <input type="submit" class="btn btn-default" />
         </form>
     </div>
 </div>
+<script>
+function readURL(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#image-preview').attr('src', e.target.result);
+            $("#image-preview").removeClass('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+$("#image-input").change(function() {
+    readURL(this);
+});
+var querystring = "bottle";
+$('a').each(function() {
+    var href = $(this).attr('href') + location.search;
+
+    if (href) {
+        href += (href.match(/\?/) ? '&' : '?') + "prev=" + querystring;
+        $(this).attr('href', href);
+    }
+});
+</script>
 {{ end }}

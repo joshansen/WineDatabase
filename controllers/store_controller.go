@@ -72,5 +72,5 @@ func (sc *StoreControllerImpl) create(w http.ResponseWriter, r *http.Request) {
 
 	so.Geocode()
 	so.Save(sc.database.Get(r))
-	http.Redirect(w, r, "/store/"+so.Id.Hex(), http.StatusSeeOther)
+	utils.Redirect(w, r, "/store/"+so.Id.Hex())
 }

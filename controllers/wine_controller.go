@@ -7,7 +7,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joshansen/WineDatabase/models"
 	"github.com/joshansen/WineDatabase/utils"
-	"github.com/monoculum/formam"
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
@@ -59,17 +58,44 @@ func (wc *WineControllerImpl) get(w http.ResponseWriter, r *http.Request) (*mode
 
 func (wc *WineControllerImpl) form(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("views/layout.html", "views/create_wine.html")
-	t.Execute(w, nil)
+
+	db := wc.database.Get(r)
+	varieties := new(models.Varieties)
+	if err := varieties.FindAll(db); err != nil {
+		//return new(models.Wines), errors.New("Could not retrieve all wines.")
+	}
+
+	if err := t.Execute(w, varieties); err != nil {
+		fmt.Printf("\nThe following error occured when compiling the template: %v\n", err)
+	}
 }
 
 func (wc *WineControllerImpl) create(w http.ResponseWriter, r *http.Request) {
-	wo := models.Wine{Id: bson.NewObjectId(), CreatedDate: time.Now(), ModifiedDate: time.Now()}
 	r.ParseForm()
-	if err := formam.Decode(r.Form, &wo); err != nil {
-		fmt.Printf("Failed to decode form with error: %v\n", err)
+
+	wo := models.Wine{
+		Id:           bson.NewObjectId(),
+		CreatedDate:  time.Now(),
+		ModifiedDate: time.Now(),
+		Name:         r.FormValue("Name"),
+		Winery:       r.FormValue("Winery"),
+		Information:  r.FormValue("Information"),
+		Style:        r.FormValue("Style"),
+		Variety:      bson.ObjectIdHex(r.FormValue("Variety")),
+		Region:       r.FormValue("Region"),
+	}
+
+	db := wc.database.Get(r)
+	if err := wo.Save(db); err != nil {
+		fmt.Printf("Failed to save wine with error: %v\n", err)
 		return
 	}
 
-	wo.Save(wc.database.Get(r))
-	http.Redirect(w, r, "/wine/"+wo.Id.Hex(), http.StatusSeeOther)
+	variety := new(models.Variety)
+	if err := variety.FindByID(wo.Variety, db); err != nil {
+		fmt.Printf("Could not find variety: %v", err)
+	}
+	variety.AddWine(wo.Id, db)
+
+	utils.Redirect(w, r, "/wine/"+wo.Id.Hex())
 }

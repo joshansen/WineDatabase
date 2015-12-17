@@ -1,0 +1,33 @@
+<!-- Title -->
+{{ define "title" }}
+<title>Wine Database|Create Variety</title>
+{{ end }}
+<!-- Description -->
+{{ define "description" }}
+<meta name="description" content="Create a Variety"> {{ end }}
+<!-- Body -->
+{{ define "body" }}
+<div class="col-md-6">
+    <div class="row">
+        <h1>Add a Variety</h1>
+        <form method="POST">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="Name" class="form-control" required />
+            </div>
+            <input type="submit" class="btn btn-default" />
+        </form>
+    </div>
+</div>
+<script>
+var querystring = "variety";
+$('a').each(function() {
+    var href = $(this).attr('href') + location.search;
+
+    if (href) {
+        href += (href.match(/\?/) ? '&' : '?') + "prev=" + querystring;
+        $(this).attr('href', href);
+    }
+});
+</script>
+{{ end }}

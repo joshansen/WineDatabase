@@ -49,6 +49,8 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 	wineController.Register(router)
 	bottleController := controllers.NewBottleController(dba)
 	bottleController.Register(router)
+	varietyController := controllers.NewVarietyController(dba)
+	varietyController.Register(router)
 
 	s.Use(negroni.HandlerFunc(secure.New(secure.Options{
 		//TODO add allowed hosts, explore other options
