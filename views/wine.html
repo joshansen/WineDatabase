@@ -7,4 +7,24 @@
 <meta name="description" content="This is the wine app wine page"> {{ end }}
 <!-- Body -->
 {{ define "body" }}
-<h1>This is the response</h1> {{ . }} {{ end }}
+<h1>{{ .Name }}</h1>
+<div class="md-col-6">
+    Winery: {{ .Winery}}
+    <br/> Information: {{ .Information}}
+    <br/> Variety: {{ .Variety.Hex}}
+    <br/> Style: {{ .Style}}
+    <br/> Region: {{ .Region}}
+    <!-- Best Price -->
+    <!-- Worst Price -->
+    <!-- Last Bought -->
+    <!-- Average Rating -->
+    <!-- Best Year -->
+    <!-- List of stores -->
+    <!-- List of bottles -->
+    <!-- Picture or pictures -->
+    <h2>Bottles</h2> {{range $bottle := .Bottles}}{{ $bottle.Hex}}
+    <br/>{{ end }}
+    <h2>Stores</h2> {{range $store := .Stores}}{{ $store.Hex }}
+    <br/>{{ end }}
+</div>
+{{ end }}

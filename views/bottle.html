@@ -7,4 +7,33 @@
 <meta name="description" content="This is the wine app bottle page"> {{ end }}
 <!-- Body -->
 {{ define "body" }}
-<h1>This is the response</h1> {{ . }} {{ end }}
+<h1>Wine {{ .Wine.Hex }}</h1>
+<div class="col-md-6">
+    Rating: <div id="rating"></div><br/>
+    {{with .BuyAgain}}
+    	<strong>Buy Again!</strong>
+    {{ else }}
+    	<strong>Don't Buy Again</strong>
+    {{ end }}
+    <br/> Price: ${{printf "%6.2f" .Price}}{{with .OnSale }} On Sale!{{end}}
+    <br /> Date Purchased: {{with not .DatePurchased.IsZero }}{{ .DatePurchased.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
+    <br /> Date Drank: {{with not .DateDrank.IsZero }}{{ .DateDrank.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
+    <br /> Memory Cue: {{ .MemoryCue}}
+    <br /> Year: {{ .Year}}
+    <br /> Notes: {{ .Notes}}
+    <br /> Store: {{ .Store.Hex}}
+</div>
+{{with .ImageOriginalURL}}
+	<img src="//data.wineapp.org/{{ .ImageOriginalURL }}" alt="Bottle Image" class="img-responsive col-md-6">
+{{end}}
+<script src="/js/jquery.raty.js"></script>
+<script>
+$("#rating").raty({
+    path: "/img/",
+        size: 24,
+        hints: ["Bad", "Poor", "Regular", "Good", "Great"],
+        readOnly: true,
+        score: {{.Rating}},
+});
+</script>
+{{ end }}

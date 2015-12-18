@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -37,9 +36,15 @@ func (wc *WineControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 		//TODO Fix this so it doesn't respond with only text
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	} else {
-		resultString, _ := json.Marshal(data)
-		t, _ := template.ParseFiles("views/layout.html", "views/wine.html")
-		t.Execute(w, string(resultString))
+
+		t, err := template.ParseFiles("views/layout.html", "views/wine.html")
+		if err != nil {
+			fmt.Printf("The following error occured when compiling wine.html template: %v", err)
+		}
+
+		if err := t.Execute(w, data); err != nil {
+			fmt.Printf("The following error occured when compiling the create_wine template: %v", err)
+		}
 	}
 }
 
@@ -57,16 +62,21 @@ func (wc *WineControllerImpl) get(w http.ResponseWriter, r *http.Request) (*mode
 }
 
 func (wc *WineControllerImpl) form(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("views/layout.html", "views/create_wine.html")
+	t, err := template.ParseFiles("views/layout.html", "views/create_wine.html")
+	if err != nil {
+		fmt.Printf("The following error occured when compiling create_wine.html template: %v", err)
+	}
 
 	db := wc.database.Get(r)
 	varieties := new(models.Varieties)
 	if err := varieties.FindAll(db); err != nil {
-		//return new(models.Wines), errors.New("Could not retrieve all wines.")
+		fmt.Printf("The following error occured when getting all varieties: %v", err)
+		return
 	}
 
 	if err := t.Execute(w, varieties); err != nil {
-		fmt.Printf("\nThe following error occured when compiling the template: %v\n", err)
+		fmt.Printf("The following error occured when executing the create_wine template: %v", err)
+		return
 	}
 }
 

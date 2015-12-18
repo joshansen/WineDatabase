@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/joshansen/WineDatabase/models"
@@ -36,9 +35,8 @@ func (vc *VarietyControllerImpl) single(w http.ResponseWriter, r *http.Request) 
 		//TODO Fix this so it doesn't respond with only text
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	} else {
-		resultString, _ := json.Marshal(data)
 		t, _ := template.ParseFiles("views/layout.html", "views/variety.html")
-		t.Execute(w, string(resultString))
+		t.Execute(w, data)
 	}
 }
 

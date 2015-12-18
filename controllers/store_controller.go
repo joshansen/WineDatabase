@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/joshansen/WineDatabase/models"
@@ -9,6 +8,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -36,9 +36,8 @@ func (sc *StoreControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 		//TODO Fix this so it doesn't respond with only text
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	} else {
-		resultString, _ := json.Marshal(data)
 		t, _ := template.ParseFiles("views/layout.html", "views/store.html")
-		t.Execute(w, string(resultString))
+		t.Execute(w, data)
 	}
 }
 
@@ -63,6 +62,7 @@ func (sc *StoreControllerImpl) form(w http.ResponseWriter, r *http.Request) {
 func (sc *StoreControllerImpl) create(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
+	website := strings.TrimPrefix(strings.TrimPrefix(r.FormValue("Website"), "http://"), "https://")
 	so := models.Store{
 		Id:           bson.NewObjectId(),
 		CreatedDate:  time.Now(),
@@ -72,7 +72,7 @@ func (sc *StoreControllerImpl) create(w http.ResponseWriter, r *http.Request) {
 		City:         r.FormValue("City"),
 		State:        r.FormValue("State"),
 		Zip:          r.FormValue("Zip"),
-		Website:      r.FormValue("Website"),
+		Website:      website,
 	}
 
 	so.Geocode()

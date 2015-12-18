@@ -7,4 +7,6 @@
 <meta name="description" content="This is the wine app variety page"> {{ end }}
 <!-- Body -->
 {{ define "body" }}
-<h1>This is the response</h1> {{ . }} {{ end }}
+<h1>{{ .Name }}</h1>
+<h2>Wines</h2> {{range $wine := .Wines}} {{$wine.Hex}}
+<br/> {{end}} {{ end }}

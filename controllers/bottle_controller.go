@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/goamz/goamz/aws"
@@ -44,9 +43,8 @@ func (bc *BottleControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 		//TODO Fix this so it doesn't respond with only text
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	} else {
-		resultString, _ := json.Marshal(data)
 		t, _ := template.ParseFiles("views/layout.html", "views/bottle.html")
-		t.Execute(w, string(resultString))
+		t.Execute(w, data)
 	}
 }
 
@@ -217,6 +215,6 @@ func uploadToS3(file multipart.File, header *multipart.FileHeader) (url string) 
 	}
 
 	//return the image url
-	url = "http://data.winedatabase.org/" + filename
+	url = filename
 	return
 }

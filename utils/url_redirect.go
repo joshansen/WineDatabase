@@ -5,12 +5,18 @@ import (
 )
 
 func Redirect(w http.ResponseWriter, r *http.Request, defualtUrl string) {
+	urlMap := map[string]string{
+		"home":    "",
+		"variety": "variety",
+		"bottle":  "bottle",
+		"store":   "store",
+		"wine":    "wine",
+	}
 
-	queryMap := r.URL.Query()
-	prev := queryMap.Get("prev")
+	url, ok := urlMap[r.URL.Query().Get("prev")]
 
-	if prev != "" {
-		http.Redirect(w, r, "/"+prev, http.StatusSeeOther)
+	if ok {
+		http.Redirect(w, r, "/"+url, http.StatusSeeOther)
 	} else {
 		http.Redirect(w, r, defualtUrl, http.StatusSeeOther)
 	}
