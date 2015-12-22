@@ -22,24 +22,6 @@ type Store struct {
 	Purchases    []bson.ObjectId
 }
 
-// func (s *Store) Update(name, address, city, state, zip string, website url.URL, db *mgo.Database) {
-// 	lat, lng, err := geocode(address + "," + city + "," + state + " " + zip)
-// 	if err != nil {
-// 		fmt.Printf("Error in geocoding store address: %v", err)
-// 	}
-
-// 	s.ModifiedDate = time.Now()
-// 	s.Name = name
-// 	s.Address = address
-// 	s.City = city
-// 	s.State = state
-// 	s.Zip = zip
-// 	s.Website = website
-// 	s.Lattitude = lat
-// 	s.Longitutde = lng
-// 	s.Save(db)
-// }
-
 func (s *Store) Geocode() {
 	lat, lng, err := geocode(s.Address + "," + s.City + "," + s.State + " " + s.Zip)
 	if err != nil {

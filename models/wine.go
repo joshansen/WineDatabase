@@ -23,15 +23,6 @@ type Wine struct {
 	Stores       []bson.ObjectId
 }
 
-// func (w *Wine) Update(name, brand, information string, db *mgo.Database) error {
-// 	//need to check if variables present?
-// 	w.ModifiedDate = time.Now()
-// 	w.Name = name
-// 	w.Brand = brand
-// 	w.Information = information
-// 	return w.Save(db)
-// }
-
 func (w *Wine) AddPurchaseStore(purchaseId, storeId bson.ObjectId, db *mgo.Database) error {
 	w.ModifiedDate = time.Now()
 
