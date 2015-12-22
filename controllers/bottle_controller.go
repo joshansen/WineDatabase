@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"errors"
+	//"errors"
 	"fmt"
 	"github.com/goamz/goamz/aws"
 	"github.com/goamz/goamz/s3"
@@ -36,30 +36,49 @@ func (bc *BottleControllerImpl) Register(router *mux.Router) {
 
 //servethe bottle.html page
 func (bc *BottleControllerImpl) single(w http.ResponseWriter, r *http.Request) {
-	//written below
-	data, err := bc.get(w, r)
 
-	if err != nil {
-		//TODO Fix this so it doesn't respond with only text
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	} else {
-		t, _ := template.ParseFiles("views/layout.html", "views/bottle.html")
-		t.Execute(w, data)
-	}
-}
-
-//get the bottle from id in url parameter
-func (bc *BottleControllerImpl) get(w http.ResponseWriter, r *http.Request) (*models.Bottle, error) {
 	if !bson.IsObjectIdHex(mux.Vars(r)["id"]) {
-		return new(models.Bottle), errors.New("Not a valid ID.")
+		//errors.New("Not a valid ID.")
 	}
+
 	bottle := new(models.Bottle)
+	wine := new(models.Wine)
+	store := new(models.Store)
+	variety := new(models.Variety)
+
 	db := bc.database.Get(r)
 	if err := bottle.FindByID(bson.ObjectIdHex(mux.Vars(r)["id"]), db); err != nil {
-		return new(models.Bottle), errors.New("No such bottle.")
+		//return new(models.Bottle), errors.New("No such bottle.")
+	}
+	if err := wine.FindByID(bottle.Wine, db); err != nil {
+		//return new(models.Bottle), errors.New("No such bottle.")
+	}
+	if err := variety.FindByID(wine.Variety, db); err != nil {
+		//return new(models.Bottle), errors.New("No such bottle.")
+	}
+	if err := store.FindByID(bottle.Store, db); err != nil {
+		//return new(models.Bottle), errors.New("No such bottle.")
 	}
 
-	return bottle, nil
+	data := struct {
+		Bottle  *models.Bottle
+		Wine    *models.Wine
+		Store   *models.Store
+		Variety *models.Variety
+	}{
+		bottle,
+		wine,
+		store,
+		variety,
+	}
+
+	// if err != nil {
+	// 	//TODO Fix this so it doesn't respond with only text
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// } else {
+	t, _ := template.ParseFiles("views/layout.html", "views/bottle.html")
+	t.Execute(w, data)
+	//}
 }
 
 //serve the create_bottle page

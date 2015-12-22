@@ -10,43 +10,44 @@
 <style>
 	#map { height: 300px }
 </style>
-<h1>{{.Name}}</h1>
+<h1><a href="//{{.Website}}">{{.Name}}</a></h1>
 <div class="col-md-6">
     <strong>Address:</strong><br />
     {{.Address}}<br />
-    {{.City}}, {{.State}} {{.Zip}}<br />
-    <strong>Website:</strong><br />
-    <a href="//{{.Website}}">{{.Name}}</a>
+    {{.City}}, {{.State}} {{.Zip}}<br /><br />
+    <a href="//{{.Website}}">Website</a>
     <h2>Bottles</h2>
     {{range $bottle := .Bottles}}
     {{$bottle.Hex}}<br/>
     {{end}}
 </div>
-<div class="col-md-6">
-    <div id="map" class="visible-md-block visible-lg-block"></div>
-</div>
-<!-- Google Maps Script -->
-<script src="//maps.googleapis.com/maps/api/js?v=3.exp"></script>
-<script>
-		var storeLocation = new google.maps.LatLng({{.Lattitude}}, {{.Longitutde}});
-		var map;
+{{if ne .Lattitude 0.0}}
+    <div class="col-md-6">
+        <div id="map" class="visible-md-block visible-lg-block"></div>
+    </div>
+    <!-- Google Maps Script -->
+    <script src="//maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script>
+    		var storeLocation = new google.maps.LatLng({{.Lattitude}}, {{.Longitutde}});
+    		var map;
 
-	google.maps.event.addDomListener(window, "load", initialize);
-	function initialize() {
-            //setup google functions
-            var mapOptions = {
-                zoom: 12,
-                //coordinates of center
-                center: storeLocation
-            };
-        map = new google.maps.Map(document.getElementById('map'), mapOptions);
+    	google.maps.event.addDomListener(window, "load", initialize);
+    	function initialize() {
+                //setup google functions
+                var mapOptions = {
+                    zoom: 12,
+                    //coordinates of center
+                    center: storeLocation
+                };
+            map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
-        var marker = new google.maps.Marker({
-            position: storeLocation,
-            title: "Store Location",
-            map: map
-        });
+            var marker = new google.maps.Marker({
+                position: storeLocation,
+                title: "{{.Name}}",
+                map: map
+            });
 
-}
-</script>
+    }
+    </script>
+{{end}}
 {{ end }}

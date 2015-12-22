@@ -16,7 +16,8 @@
                 <label>Wine <a href="/wine?prev=bottle" class="small">Add</a></label>
                 <select name="Wine" class="form-control" required>
                     {{range $wine := .Wines}}
-                    <option value="{{$wine.Id.Hex}}">{{$wine.Name}} - {{$wine.Winery}}</option>
+                    <!-- TODO: Add the variety at the end -->
+                    <option value="{{$wine.Id.Hex}}">{{$wine.Winery}} {{with $wine.Name }}{{ . }} {{end}}</option>
                     {{end}}
                 </select>
             </div>
@@ -27,9 +28,18 @@
                     <input type="number" value="2015" min="1800" step="1" data-number-to-fixed="2" class="form-control currency" name="Year" required/>
                 </div>
             </div>
+            <div class="form-group">
+                <label>Rating</label>
+                <div id="rating"></div>
+            </div>
+            <div class="checkbox">
+                <label>
+                    <input name="BuyAgain" type="checkbox">Buy again!
+                </label>
+            </div>
             <!-- Store -->
             <div class="form-group">
-                <label>Store <a href="/store?prev=bottle" class="small">Add</a></label>
+                <label>Purchase Location <a href="/store?prev=bottle" class="small">Add</a></label>
                 <select name="Store" class="form-control" required>
                     {{range $store := .Stores}}
                     <option value="{{$store.Id.Hex}}">{{$store.Name}} - {{$store.City}}</option>
@@ -37,17 +47,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Rating</label>
-                <div id="rating"></div>
-                <!-- <input name="Rating" type="range" min="0" max="5" step="1" required> -->
-            </div>
-            <div class="checkbox">
-                <label>
-                    <input name="BuyAgain" type="checkbox">We Should Buy Again!
-                </label>
-            </div>
-            <div class="form-group">
-                <label>Price</label>
+                <label>Price per Bottle</label>
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
                     <input type="number" value="10.00" min="0" step="0.01" data-number-to-fixed="2" class="form-control currency" name="Price" required/>
@@ -55,7 +55,7 @@
             </div>
             <div class="checkbox">
                 <label>
-                    <input name="OnSale" type="checkbox">On Sale When Purchased
+                    <input name="OnSale" type="checkbox">On sale
                 </label>
             </div>
             <div class="form-group">
