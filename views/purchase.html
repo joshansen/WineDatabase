@@ -1,19 +1,19 @@
 <!-- Title -->
 {{ define "title" }}
-    <title>Wine Database|Bottle</title>
+    <title>Wine Database|Purchase</title>
 {{ end }}
 <!-- Description -->
 {{ define "description" }}
-    <meta name="description" content="This is the wine app bottle page">
+    <meta name="description" content="This is the wine app purchase page">
 {{ end }}
 <!-- Body -->
 {{ define "body" }}
-    <h1>{{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Variety.Name }} ({{ .Bottle.Year}})<br/>
-        <small>Bought {{if not .Bottle.DatePurchased.IsZero }}{{ .Bottle.DatePurchased.Format "January 2, 2006"}}{{end}} from {{ .Store.Name }}
+    <h1>{{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Variety.Name }} ({{ .Purchase.Year}})<br/>
+        <small>Bought {{if not .Purchase.DatePurchased.IsZero }}{{ .Purchase.DatePurchased.Format "January 2, 2006"}}{{end}} from {{ .Store.Name }}
         </small>
     </h1>
     <span id="rating"></span>
-    {{with .Bottle.BuyAgain}}
+    {{with .Purchase.BuyAgain}}
         <strong>&nbsp;&nbsp;&nbsp;Buy again!</strong>
     {{ end }}<br/><br>
     {{with .Wine.Information}}
@@ -49,7 +49,7 @@
                     <strong>Price:</strong>
                 </div>
                 <div class="col-md-8">
-                    ${{printf "%6.2f" .Bottle.Price}}{{with .Bottle.OnSale }} (n sale){{end}}
+                    ${{printf "%6.2f" .Purchase.Price}}{{with .Purchase.OnSale }} (n sale){{end}}
                 </div>
             </div>
             <div class="row">
@@ -57,7 +57,7 @@
                     <strong>Purchased:</strong>
                 </div>
                 <div class="col-md-8">
-                    {{if not .Bottle.DatePurchased.IsZero }}{{ .Bottle.DatePurchased.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
+                    {{if not .Purchase.DatePurchased.IsZero }}{{ .Purchase.DatePurchased.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
                 </div>
             </div>
             <div class="row">
@@ -65,10 +65,10 @@
                     <strong>Drank:</strong>
                 </div>
                 <div class="col-md-8">
-                    {{if not .Bottle.DateDrank.IsZero }}{{ .Bottle.DateDrank.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
+                    {{if not .Purchase.DateDrank.IsZero }}{{ .Purchase.DateDrank.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
                 </div>
             </div>
-            {{with .Bottle.MemoryCue}}
+            {{with .Purchase.MemoryCue}}
                 <div class="row">
                     <div class="col-md-4">
                         <strong>Memory Cue:</strong>
@@ -78,7 +78,7 @@
                     </div>
                 </div>
             {{end}}
-            {{with .Bottle.Notes}}
+            {{with .Purchase.Notes}}
                 <div class="row">
                     <div class="col-md-4">
                         <strong>Notes:</strong>
@@ -145,9 +145,9 @@
             </script>
         {{end}}
     </div>
-    {{with .Bottle.ImageOriginalURL}}
+    {{with .Purchase.ImageOriginalURL}}
         <div class="col-md-6">
-            <img src="//data.wineapp.org/{{ . }}" alt="Bottle Image" class="img-responsive">
+            <img src="//data.wineapp.org/{{ . }}" alt="Purchase Bottle Image" class="img-responsive">
         </div>
     {{end}}
     <script src="/js/jquery.raty.js"></script>
@@ -157,7 +157,7 @@
         size: 24,
         hints: ["Bad", "Poor", "Regular", "Good", "Great"],
         readOnly: true,
-        score: {{.Bottle.Rating}},
+        score: {{.Purchase.Rating}},
     });
     </script>
 {{ end }}

@@ -16,9 +16,9 @@
     {{.Address}}<br />
     {{.City}}, {{.State}} {{.Zip}}<br /><br />
     <a href="//{{.Website}}">Website</a>
-    <h2>Bottles</h2>
-    {{range $bottle := .Bottles}}
-    {{$bottle.Hex}}<br/>
+    <h2>Purchases</h2>
+    {{range $purchase := .Purchases}}
+    {{$purchase.Hex}}<br/>
     {{end}}
 </div>
 {{if ne .Lattitude 0.0}}

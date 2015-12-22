@@ -16,13 +16,11 @@ type Wine struct {
 	Name         string
 	Winery       string
 	Information  string
-	//ImageUrl string
-	//OriginalImageUrl string
-	Variety bson.ObjectId
-	Style   string
-	Region  string
-	Bottles []bson.ObjectId
-	Stores  []bson.ObjectId
+	Variety      bson.ObjectId
+	Style        string
+	Region       string
+	Purchases    []bson.ObjectId
+	Stores       []bson.ObjectId
 }
 
 // func (w *Wine) Update(name, brand, information string, db *mgo.Database) error {
@@ -34,10 +32,10 @@ type Wine struct {
 // 	return w.Save(db)
 // }
 
-func (w *Wine) AddBottleStore(bottleId, storeId bson.ObjectId, db *mgo.Database) error {
+func (w *Wine) AddPurchaseStore(purchaseId, storeId bson.ObjectId, db *mgo.Database) error {
 	w.ModifiedDate = time.Now()
 
-	w.Bottles = append(w.Bottles, bottleId)
+	w.Purchases = append(w.Purchases, purchaseId)
 	//Appends only if store not already present
 	w.Stores = appendIfMissing(w.Stores, storeId)
 

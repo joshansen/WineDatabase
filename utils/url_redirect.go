@@ -6,11 +6,11 @@ import (
 
 func Redirect(w http.ResponseWriter, r *http.Request, defualtUrl string) {
 	urlMap := map[string]string{
-		"home":    "",
-		"variety": "variety",
-		"bottle":  "bottle",
-		"store":   "store",
-		"wine":    "wine",
+		"home":     "",
+		"variety":  "variety",
+		"purchase": "purchase",
+		"store":    "store",
+		"wine":     "wine",
 	}
 
 	url, ok := urlMap[r.URL.Query().Get("prev")]

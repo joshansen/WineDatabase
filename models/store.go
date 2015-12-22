@@ -19,7 +19,7 @@ type Store struct {
 	Website      string
 	Lattitude    float64
 	Longitutde   float64
-	Bottles      []bson.ObjectId
+	Purchases    []bson.ObjectId
 }
 
 // func (s *Store) Update(name, address, city, state, zip string, website url.URL, db *mgo.Database) {
@@ -51,10 +51,10 @@ func (s *Store) Geocode() {
 	s.Longitutde = lng
 }
 
-func (s *Store) AddBottle(bottleId bson.ObjectId, db *mgo.Database) error {
+func (s *Store) AddPurchase(purchaseId bson.ObjectId, db *mgo.Database) error {
 	s.ModifiedDate = time.Now()
 
-	s.Bottles = append(s.Bottles, bottleId)
+	s.Purchases = append(s.Purchases, purchaseId)
 
 	return s.Save(db)
 }

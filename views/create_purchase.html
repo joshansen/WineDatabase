@@ -1,19 +1,19 @@
 <!-- Title -->
 {{ define "title" }}
-<title>Wine Database|Create Bottle</title>
+<title>Wine Database|Create Purchase</title>
 {{ end }}
 <!-- Description -->
 {{ define "description" }}
-<meta name="description" content="Create a Bottle"> {{ end }}
+<meta name="description" content="Create a Purchase"> {{ end }}
 <!-- Body -->
 {{ define "body" }}
 <div class="col-md-6">
     <div class="row">
-        <h1>Add a Bottle</h1>
+        <h1>Add a Purchase</h1>
         <form method="POST" enctype="multipart/form-data">
             <!-- Wine -->
             <div class="form-group">
-                <label>Wine <a href="/wine?prev=bottle" class="small">Add</a></label>
+                <label>Wine <a href="/wine?prev=purchase" class="small">Add</a></label>
                 <select name="Wine" class="form-control" required>
                     {{range $wine := .Wines}}
                     <!-- TODO: Add the variety at the end -->
@@ -39,7 +39,7 @@
             </div>
             <!-- Store -->
             <div class="form-group">
-                <label>Purchase Location <a href="/store?prev=bottle" class="small">Add</a></label>
+                <label>Purchase Location <a href="/store?prev=purchase" class="small">Add</a></label>
                 <select name="Store" class="form-control" required>
                     {{range $store := .Stores}}
                     <option value="{{$store.Id.Hex}}">{{$store.Name}} - {{$store.City}}</option>

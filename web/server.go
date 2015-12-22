@@ -47,8 +47,8 @@ func NewServer(dba utils.DatabaseAccessor, sessionSecret string, isDevelopment b
 	storeController.Register(router)
 	wineController := controllers.NewWineController(dba)
 	wineController.Register(router)
-	bottleController := controllers.NewBottleController(dba)
-	bottleController.Register(router)
+	purchaseController := controllers.NewPurchaseController(dba)
+	purchaseController.Register(router)
 	varietyController := controllers.NewVarietyController(dba)
 	varietyController.Register(router)
 
