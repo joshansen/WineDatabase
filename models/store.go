@@ -20,6 +20,7 @@ type Store struct {
 	Lattitude    float64
 	Longitutde   float64
 	Purchases    []bson.ObjectId
+	Wines	       []bson.ObjectId
 }
 
 func (s *Store) Geocode() {
@@ -33,10 +34,12 @@ func (s *Store) Geocode() {
 	s.Longitutde = lng
 }
 
-func (s *Store) AddPurchase(purchaseId bson.ObjectId, db *mgo.Database) error {
+func (s *Store) AddPurchaseWine(purchaseId, wineId bson.ObjectId, db *mgo.Database) error {
 	s.ModifiedDate = time.Now()
 
 	s.Purchases = append(s.Purchases, purchaseId)
+	//Appends only if store not already present
+	s.Wines = appendIfMissing(s.Wines, wineId)
 
 	return s.Save(db)
 }

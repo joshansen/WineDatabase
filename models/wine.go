@@ -16,7 +16,7 @@ type Wine struct {
 	Name         string
 	Winery       string
 	Information  string
-	Variety      bson.ObjectId
+	Variety      Variety
 	Style        string
 	Region       string
 	Purchases    []bson.ObjectId

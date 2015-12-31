@@ -4,27 +4,36 @@
 {{ end }}
 <!-- Description -->
 {{ define "description" }}
-<meta name="description" content="This is the wine app wine page"> {{ end }}
+    <meta name="description" content="This is the wine app wine page">
+{{ end }}
 <!-- Body -->
 {{ define "body" }}
-<h1>{{ .Name }}</h1>
+<h1>{{ .Wine.Name }}</h1>
 <div class="md-col-6">
-    Winery: {{ .Winery}}
-    <br/> Information: {{ .Information}}
-    <br/> Variety: {{ .Variety.Hex}}
-    <br/> Style: {{ .Style}}
-    <br/> Region: {{ .Region}}
+    Winery: {{ .Wine.Winery}}
+    <br/> Information: {{ .Wine.Information}}
+    <br/> Variety: {{ .Variety.Name}}
+    <br/> Style: {{ .Wine.Style}}
+    <br/> Region: {{ .Wine.Region}}
     <!-- Best Price -->
     <!-- Worst Price -->
+
+    <!-- First Bought -->
     <!-- Last Bought -->
+
     <!-- Average Rating -->
-    <!-- Best Year -->
-    <!-- List of stores -->
+    <!-- Best Year Purchased -->
+
+    <!-- Least expensive store -->
+
+    <!-- Bought on sale list, store time -->
+
+    <!-- List of stores ordered by least to most expense, with date purchased -->
     <!-- List of purchasess -->
-    <!-- Picture or pictures -->
-    <h2>Purchases</h2> {{range $purchase := .Purchases}}{{ $purchase.Hex}}
+    <!-- Last Picture -->
+    <h2>Purchases</h2> {{range $purchase := .Purchases}} <a href="/purchase/{{ $purchase.Id.Hex }}">Store {{$purchase.Store.Hex}} on {{ $purchase.DatePurchased.Format "January 2, 2006" }}</a>
     <br/>{{ end }}
-    <h2>Stores</h2> {{range $store := .Stores}}{{ $store.Hex }}
+    <h2>Stores</h2> {{range $store := .Wine.Stores}}{{ $store.Hex }}
     <br/>{{ end }}
 </div>
 {{ end }}

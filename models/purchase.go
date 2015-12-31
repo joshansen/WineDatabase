@@ -11,8 +11,8 @@ type Purchase struct {
 	Id               bson.ObjectId `bson:"_id"`
 	CreatedDate      time.Time
 	ModifiedDate     time.Time
-	Wine             bson.ObjectId
-	Store            bson.ObjectId
+	Wine             Wine
+	Store            Store
 	Rating           int
 	BuyAgain         bool
 	Price            float64
@@ -39,5 +39,23 @@ func (p *Purchase) FindByID(id bson.ObjectId, db *mgo.Database) error {
 
 //Return the purchase collection.
 func (*Purchase) coll(db *mgo.Database) *mgo.Collection {
+	return db.C("purchase")
+}
+
+//Slice of purchases
+type Purchases []Purchase
+
+//Find all purchases with the matching wine ID.
+func (ps *Purchases) FindByWineID(wineID bson.ObjectId, db *mgo.Database) error {
+	return ps.coll(db).Find(bson.M{"wine": wineID}).All(ps)
+}
+
+//Find all purchases.
+func (ps *Purchases) FindAll(db *mgo.Database) error {
+	return ps.coll(db).Find(nil).All(ps)
+}
+
+//Return the collection of purchases.
+func (*Purchases) coll(db *mgo.Database) *mgo.Collection {
 	return db.C("purchase")
 }
