@@ -9,48 +9,53 @@
 <!-- Body -->
 {{ define "body" }}
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-sm-12">
             <h1>
                 {{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Wine.Variety.Name }}<br/>
                 <small>{{ .Wine.Style }} wine{{with .Wine.Region}} from {{ . }}{{end}}</small>
             </h1>
             <!-- TODO display partial stars without rounding -->
-            <span class="rating" rating="{{printf "%6.1f" .Stats.AvgRating }}"></span>
-            <strong>&nbsp;&nbsp;&nbsp;Best: {{ .Stats.BestYears }}</strong>
+            <span class="rating" rating="{{printf "%.1f" .Stats.AvgRating }}"></span>
+            <strong>&nbsp;&nbsp;&nbsp;Best {{ .Stats.BestYears }}</strong>
         </div>
         {{with .Wine.Information}}
-            <div class="row text-center col-md-10 col-md-offset-1">
+            <div class="row text-center col-sm-10 col-sm-offset-1">
                     <em style="font-size:1.6rem">{{ . }}</em><br/><br/>
             </div>
         {{end}}
-        <div class="col-md-6">
+        {{with .Stats.LastImage}}
+            <div class="col-sm-6 col-sm-push-6">
+                <img src="//data.wineapp.org/{{.}}" alt="Bottle Image" class="img-responsive">
+            </div>
+        {{end}}
+        <div class="col-sm-6 {{with .Stats.LastImage}}col-sm-pull-6{{end}}">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <strong  style="font-size:1.6rem;">Price Information</strong>
                 </div>
                 <div class="panel-body">
                     <div class="row">
-                        <div class="col-md-4">
-                            <strong>Lowest Regular:</strong>
+                        <div class="col-sm-4">
+                            <strong>Lowest Regular</strong>
                         </div>
-                        <div class="col-md-8">
-                            <a href="/purchase/{{ .Stats.MinRegularPurchase.Id.Hex }}">${{printf "%6.2f" .Stats.MinRegularPrice }} at {{ .Stats.MinRegularPurchase.Store.Name }}</a>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <strong>Lowest On Sale:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            <a href="/purchase/{{ .Stats.MinSalePurchase.Id.Hex }}">${{printf "%6.2f" .Stats.MinSalePrice }} at {{ .Stats.MinSalePurchase.Store.Name }}</a>
+                        <div class="col-sm-8">
+                            <a href="/purchase/{{ .Stats.MinRegularPurchase.Id.Hex }}">${{printf "%.2f" .Stats.MinRegularPrice }} at {{ .Stats.MinRegularPurchase.Store.Name }}</a>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4">
-                            <strong>Highest:</strong>
+                        <div class="col-sm-4">
+                            <strong>Lowest On Sale</strong>
                         </div>
-                        <div class="col-md-8">
-                            <a href="/purchase/{{ .Stats.MaxPurchase.Id.Hex }}">${{printf "%6.2f" .Stats.MaxPrice }} at {{ .Stats.MaxPurchase.Store.Name }}</a>
+                        <div class="col-sm-8">
+                            <a href="/purchase/{{ .Stats.MinSalePurchase.Id.Hex }}">${{printf "%.2f" .Stats.MinSalePrice }} at {{ .Stats.MinSalePurchase.Store.Name }}</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <strong>Highest</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <a href="/purchase/{{ .Stats.MaxPurchase.Id.Hex }}">${{printf "%.2f" .Stats.MaxPrice }} at {{ .Stats.MaxPurchase.Store.Name }}</a>
                         </div>
                     </div>
                     <br/>
@@ -66,35 +71,35 @@
                 <li>Lowest Price</li>
             </ul>
         </div>
-        <div class="col-md-6">
-            <img src="//data.wineapp.org/{{ .Stats.LastImage }}" alt="Bottle Image" class="img-responsive">
-        </div>
     </div>
-    <h2 class="col-md-12 row">Purchases by Store</h2>
+    <h2 class="col-sm-12 row">Purchases by Store</h2>
     {{range $store := .Stores }}
-        <div class="col-md-12 row">
+        <div class="col-sm-12 row">
             <div class="panel panel-default">
                 <div class="panel-heading"><strong style="font-size:1.6rem;"><a href="/store/{{ $store.Store.Id.Hex }}">{{ $store.Store.Name }} - {{ $store.Store.City }}</a></strong></div>
                 <div class="panel-body">
-                    {{range $purchase := $store.Purchases}}
-                        <div class="purchase col-md-4">
-                            <strong><a href="/purchase/{{ $purchase.Id.Hex}}">{{ $purchase.DatePurchased.Format "January 2, 2006" }}</a></strong><br>
+                    {{range $index, $purchase := $store.Purchases}}
+                        <div class="purchase col-sm-4">
+                        {{if ne $index 0}}<hr class="hidden-sm hidden-md hidden-lg">{{end}}
+                            <div>
+                                <strong><a href="/purchase/{{$purchase.Id.Hex}}">{{ $purchase.DatePurchased.Format "January 2, 2006" }}</a></strong>
+                            </div>
                             <em>{{ $purchase.Year }} Vintage</em><br>
                             <span class="rating" rating="{{ $purchase.Rating }}"></span>{{with $purchase.BuyAgain }}<strong>&nbsp;&nbsp;&nbsp;Buy Again!</strong>{{end}}<br>
                             <div class="row">
-                                <div class="col-md-5">
-                                    <strong>Price:</strong>
+                                <div class="col-sm-5">
+                                    <strong>Price</strong>
                                 </div>
-                                <div class="col-md-7">
-                                    ${{printf "%6.2f" $purchase.Price}}{{with $purchase.OnSale }} (On sale){{end}}
+                                <div class="col-sm-7">
+                                    ${{printf "%.2f" $purchase.Price}}{{with $purchase.OnSale }} (On sale){{end}}
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-5">
-                                    <strong>Date Drank:</strong>
+                                <div class="col-sm-5">
+                                    <strong>Date Drank</strong>
                                 </div>
-                                <div class="col-md-7">
-                                    {{ $purchase.DateDrank.Format "Jan 2, 2006" }}
+                                <div class="col-sm-7">
+                                    {{if not $purchase.DateDrank.IsZero }}{{ $purchase.DateDrank.Format "Jan 2, 2006"}}{{else}}Not Entered{{end}}
                                 </div>
                             </div>
                         </div>

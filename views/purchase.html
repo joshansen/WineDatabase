@@ -17,73 +17,78 @@
         <strong>&nbsp;&nbsp;&nbsp;Buy again!</strong>
     {{ end }}<br/><br>
     {{with .Wine.Information}}
-        <div class="row text-center col-md-10 col-md-offset-1">
+        <div class="row text-center col-sm-10 col-sm-offset-1">
                 <em style="font-size:1.6rem">{{ . }}</em><br/><br/>
         </div>
     {{end}}
-    <div class="col-md-6">
+    {{with .ImageOriginalURL}}
+        <div class="col-sm-6 col-sm-push-6">
+            <img src="//data.wineapp.org/{{ . }}" alt="Purchase Bottle Image" class="img-responsive">
+        </div>
+    {{end}}
+    <div class="col-sm-6 {{with .ImageOriginalURL}}col-sm-pull-6{{end}}">
         <div class="well">
             <div style="padding-bottom:.75rem">
                 <a href="/wine/{{.Wine.Id.Hex}}" style="font-size:1.6rem;">{{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Wine.Variety.Name }}</a>
             </div>
             <div class="row">
-                <div class="col-md-4">
-                    <strong>Style:</strong>
+                <div class="col-sm-4">
+                    <strong>Style</strong>
                 </div>
-                <div class="col-md-8">
+                <div class="col-sm-8">
                     {{ .Wine.Style }}
                 </div>
             </div>
             {{with .Wine.Region}}
                  <div class="row">
-                    <div class="col-md-4">
-                        <strong>Region:</strong>
+                    <div class="col-sm-4">
+                        <strong>Region</strong>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-sm-8">
                         {{ . }}
                     </div>
                 </div>
             {{end}}
             <div class="row">
-                <div class="col-md-4">
-                    <strong>Price:</strong>
+                <div class="col-sm-4">
+                    <strong>Price</strong>
                 </div>
-                <div class="col-md-8">
-                    ${{printf "%6.2f" .Price}}{{with .OnSale }} (On sale){{end}}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <strong>Purchased:</strong>
-                </div>
-                <div class="col-md-8">
-                    {{if not .DatePurchased.IsZero }}{{ .DatePurchased.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
+                <div class="col-sm-8">
+                    ${{printf "%.2f" .Price}}{{with .OnSale }} (On sale){{end}}
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-4">
-                    <strong>Drank:</strong>
+                <div class="col-sm-4">
+                    <strong>Purchased</strong>
                 </div>
-                <div class="col-md-8">
+                <div class="col-sm-8">
+                    {{ .DatePurchased.Format "January 2, 2006"}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <strong>Drank</strong>
+                </div>
+                <div class="col-sm-8">
                     {{if not .DateDrank.IsZero }}{{ .DateDrank.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
                 </div>
             </div>
             {{with .MemoryCue}}
                 <div class="row">
-                    <div class="col-md-4">
-                        <strong>Memory Cue:</strong>
+                    <div class="col-sm-4">
+                        <strong>Memory Cue</strong>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-sm-8">
                         {{ . }}
                     </div>
                 </div>
             {{end}}
             {{with .Notes}}
                 <div class="row">
-                    <div class="col-md-4">
-                        <strong>Notes:</strong>
+                    <div class="col-sm-4">
+                        <strong>Notes</strong>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-sm-8">
                         {{ . }}
                     </div>
                 </div>
@@ -93,34 +98,34 @@
             <div class="panel-heading"><strong>Store Information</strong></div>
             <div class="panel-body">
                 <div class="row">
-                    <div class="col-md-4">
-                        <strong>Name:</strong>
+                    <div class="col-sm-4">
+                        <strong>Name</strong>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-sm-8">
                         <a href="/store/{{.Store.Id.Hex}}">{{ .Store.Name }}</a>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4">
-                        <strong>Address:</strong>
+                    <div class="col-sm-4">
+                        <strong>Address</strong>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-sm-8">
                         {{.Store.Address}}<br />
                         {{.Store.City}}, {{.Store.State}} {{.Store.Zip}}
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4">
-                        <strong>Website:</strong>
+                    <div class="col-sm-4">
+                        <strong>Website</strong>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-sm-8">
                         <a href="//{{.Store.Website}}">http://{{.Store.Website}}</a>
                     </div>
                 </div>
             </div>
         </div>
         {{if ne .Store.Lattitude 0.0}}
-            <div id="map" class="visible-md-block visible-lg-block" style="height:300px"></div>
+            <div id="map" class="visible-sm-block visible-md-block visible-lg-block" style="height:300px"></div>
             <script src="//maps.googleapis.com/maps/api/js?v=3.exp"></script>
             <script>
                 var storeLocation = new google.maps.LatLng({{ .Store.Lattitude }}, {{ .Store.Longitutde }});
@@ -145,11 +150,6 @@
             </script>
         {{end}}
     </div>
-    {{with .ImageOriginalURL}}
-        <div class="col-md-6">
-            <img src="//data.wineapp.org/{{ . }}" alt="Purchase Bottle Image" class="img-responsive">
-        </div>
-    {{end}}
     <script src="/js/jquery.raty.js"></script>
     <script>
     $("#rating").raty({
