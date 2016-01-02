@@ -14,15 +14,6 @@ type Variety struct {
 	CreatedDate  time.Time
 	ModifiedDate time.Time
 	Name         string
-	Wines        []bson.ObjectId
-}
-
-func (v *Variety) AddWine(wineId bson.ObjectId, db *mgo.Database) error {
-	v.ModifiedDate = time.Now()
-
-	v.Wines = append(v.Wines, wineId)
-
-	return v.Save(db)
 }
 
 func (v *Variety) Save(db *mgo.Database) error {

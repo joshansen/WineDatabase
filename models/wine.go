@@ -17,20 +17,9 @@ type Wine struct {
 	Winery       string
 	Information  string
 	Variety      Variety
+	VarietyID    bson.ObjectId
 	Style        string
 	Region       string
-	Purchases    []bson.ObjectId
-	Stores       []bson.ObjectId
-}
-
-func (w *Wine) AddPurchaseStore(purchaseId, storeId bson.ObjectId, db *mgo.Database) error {
-	w.ModifiedDate = time.Now()
-
-	w.Purchases = append(w.Purchases, purchaseId)
-	//Appends only if store not already present
-	w.Stores = appendIfMissing(w.Stores, storeId)
-
-	return w.Save(db)
 }
 
 func appendIfMissing(slice []bson.ObjectId, i bson.ObjectId) []bson.ObjectId {

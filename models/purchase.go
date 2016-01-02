@@ -12,7 +12,9 @@ type Purchase struct {
 	CreatedDate      time.Time
 	ModifiedDate     time.Time
 	Wine             Wine
+	WineID           bson.ObjectId
 	Store            Store
+	StoreID          bson.ObjectId
 	Rating           int
 	BuyAgain         bool
 	Price            float64
@@ -47,7 +49,7 @@ type Purchases []Purchase
 
 //Find all purchases with the matching wine ID.
 func (ps *Purchases) FindByWineID(wineID bson.ObjectId, db *mgo.Database) error {
-	return ps.coll(db).Find(bson.M{"wine": wineID}).All(ps)
+	return ps.coll(db).Find(bson.M{"wineid": wineID}).All(ps)
 }
 
 //Find all purchases.

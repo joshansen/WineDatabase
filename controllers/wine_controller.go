@@ -8,105 +8,266 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"html/template"
 	"net/http"
+	"sort"
 	"time"
 )
 
+//WineControllerImpl is a struct that holds a reference to the database to be used by the wine controller.
 type WineControllerImpl struct {
 	database utils.DatabaseAccessor
 }
 
+//NewWineController returns a reference to a new WineControllerImpl.
 func NewWineController(database utils.DatabaseAccessor) *WineControllerImpl {
 	return &WineControllerImpl{
 		database: database,
 	}
 }
 
+//Register registers the routes controlled by the wine controller:
+// /wine/{id}
+// /wine (Get)
+// /wine (Post)
 func (wc *WineControllerImpl) Register(router *mux.Router) {
 	router.HandleFunc("/wine/{id}", wc.single)
 	router.HandleFunc("/wine", wc.form).Methods("GET")
 	router.HandleFunc("/wine", wc.create).Methods("POST")
 }
 
+//Define the bestYears type that will be used in single.
+type bestYears []int
+
+//Define the String method on bestYears that will be used to print a list of best years with commas.
+func (ys bestYears) String() string {
+	stringOfYears := ""
+
+	for i, y := range ys {
+		if i == 0 {
+			stringOfYears = fmt.Sprint(y)
+			continue
+		}
+		stringOfYears = stringOfYears + ", " + fmt.Sprint(y)
+	}
+
+	return stringOfYears
+}
+
+//single serves the wine page associated with the wine ID in the /wine/{id} URL.
+//This function also query's the the associated Purchases records, and calculates stats and a list of purchases by store to be displayed on the wine page.
 func (wc *WineControllerImpl) single(w http.ResponseWriter, r *http.Request) {
+
+	//Check if the provided ID is in the form of a valid ID.
 	if !bson.IsObjectIdHex(mux.Vars(r)["id"]) {
-		//return new(models.Wine), errors.New("Not a valid ID.")
+		http.Error(w, "Not a valid wine ID.", http.StatusBadRequest)
+		return
 	}
 
-  wine := new(models.Wine)
-	// variety := new(models.Variety)
-	// purchases := new(models.Purchases)
+	//Create empty wine and purchases records.
+	wine := new(models.Wine)
+	purchases := new(models.Purchases)
 
+	//Get a database connection.
 	db := wc.database.Get(r)
+
+	//Populate the created wine and purchases records by querying the database.
 	if err := wine.FindByID(bson.ObjectIdHex(mux.Vars(r)["id"]), db); err != nil {
-		//return new(models.Wine), errors.New("No such wine.")
+		http.Error(w, "No such wine.", http.StatusBadRequest)
+		return
 	}
-	// if err := variety.FindByID(wine.Variety, db); err != nil {
-	// 	//return new(models.Wine), errors.New("No such wine.")
-	// }
-	// if err := purchases.FindByWineID(wine.Id, db); err != nil {
-	// 	//return new(models.Wine), errors.New("No such wine.")
-	// }
+	if err := purchases.FindByWineID(wine.Id, db); err != nil {
+		http.Error(w, "Error finding associated purchase records.", http.StatusBadRequest)
+		return
+	}
 
-	// type PurchaseWithStore struct{
-	// 	*models.Purchase
-	// 	*models.Store
-	// }
+	//Create two types that will be used to create the list of purchases grouped by store.
+	type purchasesFromStore struct {
+		Store     models.Store
+		Purchases []models.Purchase
+	}
+	type purchasesFromStores []purchasesFromStore
 
-	// purchasesWithStores := make([]PurchaseWithStore, len(purchases))
+	//Initilize variables to be used when grouping purchases by store.
+	var stores purchasesFromStores
+	var match bool
 
-	// store := new(models.Store)
-	// for _, purchase := range purchases {
-	// 	store.FindById(purchase.Store, db)
-	// 	purchasesWithStores = append(purchasesWithStores, PurchaseWithStore{purchase, store})
+	//Loop through all purchases to group them by store.
+	for _, purchase := range *purchases {
+		//Initialize match to false on first pass through loop.
+		match = false
 
-	// }
+		//Loop through the existing array of stores.
+		for storeIndex, store := range stores {
+			//If Store Id's Match, add purchase
+			if store.Store.Id == purchase.Store.Id {
+				stores[storeIndex].Purchases = append(store.Purchases, purchase)
+				match = true
+				break
+			}
+		}
+		//If no match was found, append the store and purchase.
+		if !match {
+			stores = append(stores, purchasesFromStore{purchase.Store, []models.Purchase{purchase}})
+		}
+	}
 
-	// data := struct {
-	// 	Wine      *models.Wine
-	// 	Variety   *models.Variety
-	// 	Purchases *models.Purchases
-	// 	PurchasesWithStores PurchaseWithStore
-	// }{
-	// 	wine,
-	// 	variety,
-	// 	purchases,
-	// 	purchasesWithStores,
-	// }
+	//Create statsStruct type to hold the calculated stats values that will be displayed.
+	type statsStruct struct {
+		MaxPrice           float64
+		MaxPurchase        models.Purchase
+		MinRegularPrice    float64
+		MinRegularPurchase models.Purchase
+		MinSalePrice       float64
+		MinSalePurchase    models.Purchase
+		AvgPrice           float64
+		AvgRating          float64
+		BestYears          bestYears
+		LastImage          string
+	}
 
-	data := wine
+	//Initialize the variables that will be used to calculate stats.
+	stats := new(statsStruct)
+	lenPurchases := len(*purchases)
+	var sumPrice float64
+	var sumRating int
+	var maxRating int
+	var lastBought time.Time
 
+	//Loop over all purchase records to calculate stats.
+	for _, purchase := range *purchases {
+		//Update maxPrice if current maxPrice is less than purchase price.
+		if stats.MaxPrice < purchase.Price {
+			stats.MaxPrice = purchase.Price
+			stats.MaxPurchase = purchase
+		}
+
+		//Set minRegularPrice to first nonsale purchase.
+		if stats.MinRegularPrice == 0 && !purchase.OnSale {
+			stats.MinRegularPrice = purchase.Price
+			stats.MinRegularPurchase = purchase
+		}
+		//Update minRegularPrice if current minRegularPrice is greater than purchase price and the purchase wasn't on sale.
+		if stats.MinRegularPrice > purchase.Price && !purchase.OnSale {
+			stats.MinRegularPrice = purchase.Price
+			stats.MinRegularPurchase = purchase
+		}
+
+		//Set minSalePrice to first sale purchase.
+		if stats.MinSalePrice == 0 && purchase.OnSale {
+			stats.MinSalePrice = purchase.Price
+			stats.MinSalePurchase = purchase
+		}
+		//Update minSalePrice if current minSalerice is greater than purchase price and the purchase was on sale.
+		if stats.MinSalePrice > purchase.Price && purchase.OnSale {
+			stats.MinSalePrice = purchase.Price
+			stats.MinSalePurchase = purchase
+		}
+
+		//Add current purchase price to sumPrice that will be used to calculate avgPrice.
+		sumPrice = sumPrice + purchase.Price
+
+		//Update maxRating if purchase rating is greater than current maxRating.
+		if maxRating < purchase.Rating {
+			maxRating = purchase.Rating
+		}
+
+		//Add current purchase rating to sumRating that will be used to calculate avgRating.
+		sumRating = sumRating + purchase.Rating
+
+		//Set LastImage if it is blank and ImageOriginalURL is not.
+		if stats.LastImage == "" && purchase.ImageOriginalURL != "" {
+			stats.LastImage = purchase.ImageOriginalURL
+		}
+		//Update lastBought if lastBought is after date purchased.
+		if lastBought.Before(purchase.DatePurchased) {
+			lastBought = purchase.DatePurchased
+			//Update LastImage if ImageOriginalURL isn't blank.
+			if purchase.ImageOriginalURL != "" {
+				stats.LastImage = purchase.ImageOriginalURL
+			}
+		}
+	}
+
+	//Create an array of unique best years
+	var maxYearMatch bool
+	for _, purchase := range *purchases {
+		if maxRating == purchase.Rating {
+			maxYearMatch = false
+			for _, year := range stats.BestYears {
+				if year == purchase.Year {
+					maxYearMatch = true
+					break
+				}
+			}
+			if !maxYearMatch {
+				stats.BestYears = append(stats.BestYears, purchase.Year)
+			}
+		}
+	}
+
+	//Reverse sort the list of best years
+	sort.Sort(sort.Reverse(sort.IntSlice(stats.BestYears)))
+
+	//Calculate avgPrice and avgRating.
+	stats.AvgPrice = sumPrice / float64(lenPurchases)
+	stats.AvgRating = float64(sumRating) / float64(lenPurchases)
+
+	//Create an anonymous struct that will be used to pass the populated wine, purchases, stores, and stats records to the page.
+	data := struct {
+		Wine      *models.Wine
+		Purchases *models.Purchases
+		Stores    purchasesFromStores
+		Stats     *statsStruct
+	}{
+		wine,
+		purchases,
+		stores,
+		stats,
+	}
+
+	//Parse and execute the views/wine.html template.
 	t, err := template.ParseFiles("views/layout.html", "views/wine.html")
 	if err != nil {
-		fmt.Printf("The following error occured when compiling wine.html template: %v", err)
+		fmt.Printf("The following error occured when parsing the wine.html template: %v\n", err)
 	}
-
+	//Execute the views/wine.html template.
 	if err := t.Execute(w, data); err != nil {
-		fmt.Printf("The following error occured when compiling the create_wine template: %v", err)
+		fmt.Printf("The following error occured when compiling the wine.html template: %v\n", err)
 	}
 }
 
+//form serves the form used to create new wine records. This page is found at the URL /wine/
 func (wc *WineControllerImpl) form(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("views/layout.html", "views/create_wine.html")
-	if err != nil {
-		fmt.Printf("The following error occured when compiling create_wine.html template: %v", err)
-	}
-
-	db := wc.database.Get(r)
+	//Create empty varieties struct to hold lists of all varieties.
 	varieties := new(models.Varieties)
+
+	//Get a database connection.
+	db := wc.database.Get(r)
+
+	//Query the database to populate the varieties records.
 	if err := varieties.FindAll(db); err != nil {
 		fmt.Printf("The following error occured when getting all varieties: %v", err)
 		return
 	}
 
+	//Parse and execute the views/create_wine.html template.
+	t, err := template.ParseFiles("views/layout.html", "views/create_wine.html")
+	if err != nil {
+		fmt.Printf("The following error occured when compiling create_wine.html template: %v", err)
+	}
 	if err := t.Execute(w, varieties); err != nil {
 		fmt.Printf("The following error occured when executing the create_wine template: %v", err)
 		return
 	}
 }
 
+//create recieves and parses the form data submited to create a new wine record, and creates the record.
 func (wc *WineControllerImpl) create(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+	//Parse the form.
+	if err := r.ParseForm(); err != nil {
+		fmt.Printf("Could not parse wine form: %v", err)
+	}
 
+	//Create a new record from the parsed data.
 	wo := models.Wine{
 		Id:           bson.NewObjectId(),
 		CreatedDate:  time.Now(),
@@ -118,20 +279,24 @@ func (wc *WineControllerImpl) create(w http.ResponseWriter, r *http.Request) {
 		Region:       r.FormValue("Region"),
 	}
 
+	//Get a database connection.
 	db := wc.database.Get(r)
+
+	//Lookup and add variety to wine record.
 	variety := new(models.Variety)
 	if err := variety.FindByID(bson.ObjectIdHex(r.FormValue("Variety")), db); err != nil {
 		fmt.Printf("Could not find variety: %v", err)
 	}
-
 	wo.Variety = *variety
+	wo.VarietyID = wo.Variety.Id
 
+	//Save the record to the database.
 	if err := wo.Save(db); err != nil {
 		fmt.Printf("Failed to save wine with error: %v\n", err)
+		fmt.Printf("Wine record = %#v\n", wo)
 		return
 	}
 
-	variety.AddWine(wo.Variety.Id, db)
-
+	//Redirect to a new URL.
 	utils.Redirect(w, r, "/wine/"+wo.Id.Hex())
 }

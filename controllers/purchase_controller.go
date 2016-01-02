@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-//PurchaseControllerImpl is a stuct that holds a reference to the database to be used by the purchase controller.
+//PurchaseControllerImpl is a struct that holds a reference to the database to be used by the purchase controller.
 type PurchaseControllerImpl struct {
 	database utils.DatabaseAccessor
 }
@@ -39,7 +39,7 @@ func (pc *PurchaseControllerImpl) Register(router *mux.Router) {
 }
 
 //single serves the purchase page associated with the purchase id in the /purchase/{id} URL.
-//This function also query's the the associated Wine, Store, and Variety records to display further information.
+//This function also query's the the associated Wine and Store records to be displayed on the purchase page.
 func (pc *PurchaseControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 
 	//Check if the provided ID is in the form of a valid ID.
@@ -51,8 +51,10 @@ func (pc *PurchaseControllerImpl) single(w http.ResponseWriter, r *http.Request)
 	//Create empty purchase record.
 	purchase := new(models.Purchase)
 
-	//Populated the created purchase record by querying the database.
+	//Get a database connection.
 	db := pc.database.Get(r)
+
+	//Populate the created purchase record by querying the database.
 	if err := purchase.FindByID(bson.ObjectIdHex(mux.Vars(r)["id"]), db); err != nil {
 		http.Error(w, "No such purchase.", http.StatusBadRequest)
 		return
@@ -75,8 +77,10 @@ func (pc *PurchaseControllerImpl) form(w http.ResponseWriter, r *http.Request) {
 	wines := new(models.Wines)
 	stores := new(models.Stores)
 
-	//Query the database to populate the wines and stores records.
+	//Get a database connection.
 	db := pc.database.Get(r)
+
+	//Query the database to populate the wines and stores records.
 	if err := wines.FindAll(db); err != nil {
 		http.Error(w, "Could not retrieve all wines.", http.StatusBadRequest)
 		return
@@ -110,12 +114,12 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 	//Max image size.
 	const MAX_MEMORY = 5 * 1024 * 1024 //5MB
 
-	//Parse the form
+	//Parse the form.
 	if err := r.ParseMultipartForm(MAX_MEMORY); err != nil {
 		fmt.Printf("Could not parse purchase form: %v", err)
 	}
 
-	//Create a new record from the pased data.
+	//Create a new record from the parsed data.
 	po := models.Purchase{
 		Id:           bson.NewObjectId(),
 		CreatedDate:  time.Now(),
@@ -124,16 +128,17 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 		Notes:        r.FormValue("Notes"),
 	}
 
-	//Get database connection
+	//Get a database connection.
 	db := pc.database.Get(r)
 
-	//Lookup and add wine to purchase record
+	//Lookup and add wine to purchase record.
 	wine := new(models.Wine)
 	if err := wine.FindByID(bson.ObjectIdHex(r.FormValue("Wine")), db); err != nil {
 		fmt.Printf("Could not find wine: %v", err)
 		return
 	}
 	po.Wine = *wine
+	po.WineID = po.Wine.Id
 
 	//Lookup and add store to purchase record
 	store := new(models.Store)
@@ -142,6 +147,7 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	po.Store = *store
+	po.StoreID = po.Store.Id
 
 	//Add BuyAgain to the record.
 	switch r.FormValue("BuyAgain") {
@@ -165,7 +171,7 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 	//Convert price if value is present
 	if r.FormValue("Price") == "" {
 		po.Price = 0
-	} else{
+	} else {
 		po.Price, err = strconv.ParseFloat(r.FormValue("Price"), 64)
 		if err != nil {
 			fmt.Printf("The following error occured when converting the Price field to a float: %\n", err)
@@ -175,7 +181,7 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 	//Convert DatePurchased if value is present
 	if r.FormValue("DatePurchased") == "" {
 		po.DatePurchased = *new(time.Time)
-	} else{
+	} else {
 		po.DatePurchased, err = time.Parse("2006-01-02", r.FormValue("DatePurchased"))
 		if err != nil {
 			fmt.Printf("The following error occured when converting the DatePurchased field to time.Time: %v\n", err)
@@ -185,7 +191,7 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 	//Convert DateDrank if value is present
 	if r.FormValue("DateDrank") == "" {
 		po.DateDrank = *new(time.Time)
-	} else{
+	} else {
 		po.DateDrank, err = time.Parse("2006-01-02", r.FormValue("DateDrank"))
 		if err != nil {
 			fmt.Printf("The following error occured when converting the DateDrank field to time.Time: %v\n", err)
@@ -205,7 +211,7 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 	//Convert Rating if value is present
 	if r.FormValue("Rating") == "" {
 		po.Rating = 0
-	} else{
+	} else {
 		po.Rating, err = strconv.Atoi(r.FormValue("Rating"))
 		if err != nil {
 			fmt.Printf("The following error occured when converting the Rating field to an integer: %v\n", err)
@@ -225,19 +231,7 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 	//Save the record to the database.
 	if err := po.Save(db); err != nil {
 		fmt.Printf("Failed to save purchase with error: %v\n", err)
-		fmt.Printf("Purchase record = %#v", po)
-		return
-	}
-
-	//Add the purchase ID and store ID to the associated wine record.
-	if err := wine.AddPurchaseStore(po.Id, po.Store.Id, db); err != nil {
-		fmt.Printf("Could not add purchase and store to wine: %v", err)
-		return
-	}
-
-	//Add the purchase and wine ID to the store record.
-	if err := store.AddPurchaseWine(po.Id, po.Wine.Id, db); err != nil {
-		fmt.Printf("Could not add wine and purchase to purchase: %v", err)
+		fmt.Printf("Purchase record = %#v\n", po)
 		return
 	}
 

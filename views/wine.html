@@ -1,6 +1,6 @@
 <!-- Title -->
 {{ define "title" }}
-<title>Wine Database|Wine</title>
+    <title>Wine Database|Wine</title>
 {{ end }}
 <!-- Description -->
 {{ define "description" }}
@@ -8,32 +8,110 @@
 {{ end }}
 <!-- Body -->
 {{ define "body" }}
-<h1>{{ .Wine.Name }}</h1>
-<div class="md-col-6">
-    Winery: {{ .Wine.Winery}}
-    <br/> Information: {{ .Wine.Information}}
-    <br/> Variety: {{ .Variety.Name}}
-    <br/> Style: {{ .Wine.Style}}
-    <br/> Region: {{ .Wine.Region}}
-    <!-- Best Price -->
-    <!-- Worst Price -->
-
-    <!-- First Bought -->
-    <!-- Last Bought -->
-
-    <!-- Average Rating -->
-    <!-- Best Year Purchased -->
-
-    <!-- Least expensive store -->
-
-    <!-- Bought on sale list, store time -->
-
-    <!-- List of stores ordered by least to most expense, with date purchased -->
-    <!-- List of purchasess -->
-    <!-- Last Picture -->
-    <h2>Purchases</h2> {{range $purchase := .Purchases}} <a href="/purchase/{{ $purchase.Id.Hex }}">Store {{$purchase.Store.Hex}} on {{ $purchase.DatePurchased.Format "January 2, 2006" }}</a>
-    <br/>{{ end }}
-    <h2>Stores</h2> {{range $store := .Wine.Stores}}{{ $store.Hex }}
-    <br/>{{ end }}
-</div>
+    <div class="row">
+        <div class="col-md-12">
+            <h1>
+                {{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Wine.Variety.Name }}<br/>
+                <small>{{ .Wine.Style }} wine{{with .Wine.Region}} from {{ . }}{{end}}</small>
+            </h1>
+            <!-- TODO display partial stars without rounding -->
+            <span class="rating" rating="{{printf "%6.1f" .Stats.AvgRating }}"></span>
+            <strong>&nbsp;&nbsp;&nbsp;Best: {{ .Stats.BestYears }}</strong>
+        </div>
+        {{with .Wine.Information}}
+            <div class="row text-center col-md-10 col-md-offset-1">
+                    <em style="font-size:1.6rem">{{ . }}</em><br/><br/>
+            </div>
+        {{end}}
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <strong  style="font-size:1.6rem;">Price Information</strong>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Lowest Regular:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <a href="/purchase/{{ .Stats.MinRegularPurchase.Id.Hex }}">${{printf "%6.2f" .Stats.MinRegularPrice }} at {{ .Stats.MinRegularPurchase.Store.Name }}</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Lowest On Sale:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <a href="/purchase/{{ .Stats.MinSalePurchase.Id.Hex }}">${{printf "%6.2f" .Stats.MinSalePrice }} at {{ .Stats.MinSalePurchase.Store.Name }}</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Highest:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <a href="/purchase/{{ .Stats.MaxPurchase.Id.Hex }}">${{printf "%6.2f" .Stats.MaxPrice }} at {{ .Stats.MaxPurchase.Store.Name }}</a>
+                        </div>
+                    </div>
+                    <br/>
+                    Price Histogram (average on graph)<br>
+                    <br/>
+                </div>
+            </div>
+            Map with Info Windows including the following information
+            <ul>
+                <li>Address</li>
+                <li>Last Purchased</li>
+                <li>Number of Purchases</li>
+                <li>Lowest Price</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <img src="//data.wineapp.org/{{ .Stats.LastImage }}" alt="Bottle Image" class="img-responsive">
+        </div>
+    </div>
+    <h2 class="col-md-12 row">Purchases by Store</h2>
+    {{range $store := .Stores }}
+        <div class="col-md-12 row">
+            <div class="panel panel-default">
+                <div class="panel-heading"><strong style="font-size:1.6rem;"><a href="/store/{{ $store.Store.Id.Hex }}">{{ $store.Store.Name }} - {{ $store.Store.City }}</a></strong></div>
+                <div class="panel-body">
+                    {{range $purchase := $store.Purchases}}
+                        <div class="purchase col-md-4">
+                            <strong><a href="/purchase/{{ $purchase.Id.Hex}}">{{ $purchase.DatePurchased.Format "January 2, 2006" }}</a></strong><br>
+                            <em>{{ $purchase.Year }} Vintage</em><br>
+                            <span class="rating" rating="{{ $purchase.Rating }}"></span>{{with $purchase.BuyAgain }}<strong>&nbsp;&nbsp;&nbsp;Buy Again!</strong>{{end}}<br>
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <strong>Price:</strong>
+                                </div>
+                                <div class="col-md-7">
+                                    ${{printf "%6.2f" $purchase.Price}}{{with $purchase.OnSale }} (On sale){{end}}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <strong>Date Drank:</strong>
+                                </div>
+                                <div class="col-md-7">
+                                    {{ $purchase.DateDrank.Format "Jan 2, 2006" }}
+                                </div>
+                            </div>
+                        </div>
+                    {{end }}
+                </div>
+            </div>
+        </div>
+    {{ end }}
+    <script src="/js/jquery.raty.js"></script>
+    <script>
+    $(".rating").raty({
+        path: "/img/",
+        hints: ["Bad", "Poor", "Regular", "Good", "Great"],
+        readOnly: true,
+        score: function() {
+            return $(this).attr("rating");
+          },
+    });
+    </script>
 {{ end }}
