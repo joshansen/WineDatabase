@@ -8,6 +8,28 @@
 {{ end }}
 <!-- Body -->
 {{ define "body" }}
+    <style>
+        /* Small devices (tablets, 768px and up) */
+        @media (min-width: 768px) {
+            #map {
+                height: 265px;
+            }
+        }
+
+        /* Medium devices (desktops, 992px and up) */
+        @media (min-width: 992px) {
+            #map {
+                height: 450px;
+            }
+        }
+
+        /* Large devices (large desktops, 1200px and up) */
+        @media (min-width: 1200px) {
+            #map {
+                height: 585px;
+            }
+        }
+    </style>
     <div class="row">
         <div class="col-sm-12">
             <h1>
@@ -16,7 +38,7 @@
             </h1>
             <!-- TODO display partial stars without rounding -->
             <span class="rating" rating="{{printf "%.1f" .Stats.AvgRating }}"></span>
-            <strong>&nbsp;&nbsp;&nbsp;Best {{ .Stats.BestYears }}</strong>
+            <strong>&nbsp;&nbsp;&nbsp;Best: {{ .Stats.BestYears }}</strong>
         </div>
         {{with .Wine.Information}}
             <div class="row text-center col-sm-10 col-sm-offset-1">
@@ -58,18 +80,58 @@
                             <a href="/purchase/{{ .Stats.MaxPurchase.Id.Hex }}">${{printf "%.2f" .Stats.MaxPrice }} at {{ .Stats.MaxPurchase.Store.Name }}</a>
                         </div>
                     </div>
-                    <br/>
-                    Price Histogram (average on graph)<br>
-                    <br/>
+                    <!-- FUTUREUPGRADE Price Histogram (average on graph)<br> -->
                 </div>
             </div>
-            Map with Info Windows including the following information
-            <ul>
-                <li>Address</li>
-                <li>Last Purchased</li>
-                <li>Number of Purchases</li>
-                <li>Lowest Price</li>
-            </ul>
+            <div id="map" class="visible-sm-block visible-md-block visible-lg-block"></div>
+            <script src="//maps.googleapis.com/maps/api/js?v=3.exp"></script>
+            <script>
+                var map = new google.maps.Map(document.getElementById('map')),
+                    markers = [],
+                    bounds = new google.maps.LatLngBounds(),
+                    infowindow = new google.maps.InfoWindow({
+                        maxWidth: 200
+                    });
+
+                var stores =[
+                    {{range $store := .Stores}}
+                        {
+                            name: {{$store.Store.Name}},
+                            address: {{$store.Store.Address}} + "<br>" + {{$store.Store.City}} + ", " + {{$store.Store.State}} + " " + {{$store.Store.Zip}},
+                            lat: {{$store.Store.Lattitude}},
+                            lng: {{$store.Store.Longitutde}},
+                            website: {{$store.Store.Website}},
+                            lastPurchase: {{$store.Store.LastPurchased.Format "Jan 2, 2006" }},
+                            numPurchased: {{$store.Store.NumPurchased}},
+                            minPrice: "$" + {{printf "%.2f" $store.Store.MinPrice}},
+                        },
+                    {{end}}
+                ];
+
+                google.maps.event.addDomListener(window, "load", initialize);
+                function initialize() {
+                    stores.forEach(function(result, i) {
+                        var marker = new google.maps.Marker({
+                            position: new google.maps.LatLng(result.lat, result.lng),
+                            title: result.name,
+                            map: map
+                        });
+                        result.marker = marker;
+                        markers.push(marker);
+                        bounds.extend(marker.position);
+                        result.infoWindowContent = "<h4><a href='//" + result.website + "'>" + result.name + "</a></h4><strong>Address</strong><br>" + result.address+ "<br><br>" + "<strong>Last Purchased</strong><br>" + result.lastPurchase + "<br><br>" + "<strong>Number of Purchases</strong><br>" + result.numPurchased + "<br><br>" + "<strong>Lowest Price</strong><br>" + result.minPrice;
+
+                        google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                            return function() {
+                                infowindow.setContent(result.infoWindowContent);
+                                infowindow.open(map, marker);
+                            };
+                        })(marker, i));
+                    });
+
+                    map.fitBounds(bounds);
+                }
+            </script>
         </div>
     </div>
     <h2 class="col-sm-12 row">Purchases by Store</h2>
@@ -85,7 +147,7 @@
                                 <strong><a href="/purchase/{{$purchase.Id.Hex}}">{{ $purchase.DatePurchased.Format "January 2, 2006" }}</a></strong>
                             </div>
                             <em>{{ $purchase.Year }} Vintage</em><br>
-                            <span class="rating" rating="{{ $purchase.Rating }}"></span>{{with $purchase.BuyAgain }}<strong>&nbsp;&nbsp;&nbsp;Buy Again!</strong>{{end}}<br>
+                            <span class="rating" rating="{{ $purchase.Rating }}"></span>{{with $purchase.BuyAgain }}<strong>&nbsp;&nbsp;&nbsp;Buy again!</strong>{{end}}<br>
                             <div class="row">
                                 <div class="col-sm-5">
                                     <strong>Price</strong>

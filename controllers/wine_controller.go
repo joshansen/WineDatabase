@@ -52,6 +52,43 @@ func (ys bestYears) String() string {
 	return stringOfYears
 }
 
+//Create three types that will be used to create the list of purchases grouped by store.
+type storeWithStats struct {
+	models.Store
+	LastPurchased time.Time
+	NumPurchased  int
+	MinPrice      float64
+}
+type purchasesFromStore struct {
+	Store     storeWithStats
+	Purchases []models.Purchase
+}
+type purchasesFromStores []purchasesFromStore
+
+func (p purchasesFromStore) Len() int {
+	return len(p.Purchases)
+}
+
+func (p purchasesFromStore) Less(i, j int) bool {
+	return p.Purchases[i].DatePurchased.After(p.Purchases[j].DatePurchased)
+}
+
+func (p purchasesFromStore) Swap(i, j int) {
+	p.Purchases[i], p.Purchases[j] = p.Purchases[j], p.Purchases[i]
+}
+
+func (ps purchasesFromStores) Len() int {
+	return len(ps)
+}
+
+func (ps purchasesFromStores) Less(i, j int) bool {
+	return ps[i].Store.Name < ps[j].Store.Name
+}
+
+func (ps purchasesFromStores) Swap(i, j int) {
+	ps[i], ps[j] = ps[j], ps[i]
+}
+
 //single serves the wine page associated with the wine ID in the /wine/{id} URL.
 //This function also query's the the associated Purchases records, and calculates stats and a list of purchases by store to be displayed on the wine page.
 func (wc *WineControllerImpl) single(w http.ResponseWriter, r *http.Request) {
@@ -79,13 +116,6 @@ func (wc *WineControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Create two types that will be used to create the list of purchases grouped by store.
-	type purchasesFromStore struct {
-		Store     models.Store
-		Purchases []models.Purchase
-	}
-	type purchasesFromStores []purchasesFromStore
-
 	//Initilize variables to be used when grouping purchases by store.
 	var stores purchasesFromStores
 	var match bool
@@ -106,11 +136,38 @@ func (wc *WineControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 		}
 		//If no match was found, append the store and purchase.
 		if !match {
-			stores = append(stores, purchasesFromStore{purchase.Store, []models.Purchase{purchase}})
+			stores = append(stores, purchasesFromStore{storeWithStats{purchase.Store, time.Time{}, 0, 0.0}, []models.Purchase{purchase}})
 		}
 	}
 
-	//Create statsStruct type to hold the calculated stats values that will be displayed.
+	//Sort stores in alphabetical order.
+	sort.Sort(stores)
+
+	//Loop over store purchases to calculate store specific statistics.
+	for storeIndex, store := range stores {
+		//Set NumPurchased to the length of the purchases slice.
+		stores[storeIndex].Store.NumPurchased = len(store.Purchases)
+		//Sort purchases in order of most recently purchased to least recently purchased.
+		sort.Sort(stores[storeIndex])
+
+		//Loop over all purchases for store.
+		for _, purchase := range store.Purchases {
+			//Update LastPurchased if DatePurchased is before LastPurchased.
+			if stores[storeIndex].Store.LastPurchased.Before(purchase.DatePurchased) {
+				stores[storeIndex].Store.LastPurchased = purchase.DatePurchased
+			}
+			//Set MinPrice to a purchased price to initialize.
+			if stores[storeIndex].Store.MinPrice == 0 {
+				stores[storeIndex].Store.MinPrice = purchase.Price
+			}
+			//Update MinPrice if purchase price is less than MinPrice.
+			if stores[storeIndex].Store.MinPrice > purchase.Price {
+				stores[storeIndex].Store.MinPrice = purchase.Price
+			}
+		}
+	}
+
+	//Create statsStruct type to hold the overall statisitcs that will be displayed.
 	type statsStruct struct {
 		MaxPrice           float64
 		MaxPurchase        models.Purchase
@@ -124,7 +181,7 @@ func (wc *WineControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 		LastImage          string
 	}
 
-	//Initialize the variables that will be used to calculate stats.
+	//Initialize the variables that will be used to calculate statistics.
 	stats := new(statsStruct)
 	lenPurchases := len(*purchases)
 	var sumPrice float64
@@ -132,7 +189,7 @@ func (wc *WineControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 	var maxRating int
 	var lastBought time.Time
 
-	//Loop over all purchase records to calculate stats.
+	//Loop over all purchase records to calculate statistics.
 	for _, purchase := range *purchases {
 		//Update maxPrice if current maxPrice is less than purchase price.
 		if stats.MaxPrice < purchase.Price {
