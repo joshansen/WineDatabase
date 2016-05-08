@@ -109,7 +109,7 @@ func (pc *PurchaseControllerImpl) form(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//create recieves and parses the form data submited to create a new purchase record, and creates the record.
+//create receives and parses the form data submited to create a new purchase record, and creates the record.
 func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request) {
 	//Max image size.
 	const MAX_MEMORY = 5 * 1024 * 1024 //5MB

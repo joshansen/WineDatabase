@@ -65,26 +65,32 @@ type purchasesFromStore struct {
 }
 type purchasesFromStores []purchasesFromStore
 
+//purchasesFromStore Len method returns the length of the purchases slice.
 func (p purchasesFromStore) Len() int {
 	return len(p.Purchases)
 }
 
+//purchasesFromStore Less method compares purchase record dates.
 func (p purchasesFromStore) Less(i, j int) bool {
 	return p.Purchases[i].DatePurchased.After(p.Purchases[j].DatePurchased)
 }
 
+//purchasesFromStore Swap method swaps purchase records.
 func (p purchasesFromStore) Swap(i, j int) {
 	p.Purchases[i], p.Purchases[j] = p.Purchases[j], p.Purchases[i]
 }
 
+//purchasesFromStores Len method returns the length of the slice.
 func (ps purchasesFromStores) Len() int {
 	return len(ps)
 }
 
+//purchasesFromStores Swap method compares purchasesFromStore records by store name.
 func (ps purchasesFromStores) Less(i, j int) bool {
 	return ps[i].Store.Name < ps[j].Store.Name
 }
 
+//purchasesFromStores Swap method swaps purchasesFromStore records.
 func (ps purchasesFromStores) Swap(i, j int) {
 	ps[i], ps[j] = ps[j], ps[i]
 }
@@ -317,7 +323,7 @@ func (wc *WineControllerImpl) form(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//create recieves and parses the form data submited to create a new wine record, and creates the record.
+//create receives and parses the form data submited to create a new wine record, and creates the record.
 func (wc *WineControllerImpl) create(w http.ResponseWriter, r *http.Request) {
 	//Parse the form.
 	if err := r.ParseForm(); err != nil {

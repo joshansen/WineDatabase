@@ -47,9 +47,14 @@ func (*Purchase) coll(db *mgo.Database) *mgo.Collection {
 //Slice of purchases
 type Purchases []Purchase
 
-//Find all purchases with the matching wine ID.
+//Find all purchases with the matching wineID.
 func (ps *Purchases) FindByWineID(wineID bson.ObjectId, db *mgo.Database) error {
 	return ps.coll(db).Find(bson.M{"wineid": wineID}).All(ps)
+}
+
+//Find all stores with the matching storeID.
+func (ps *Purchases) FindByStoreID(storeID bson.ObjectId, db *mgo.Database) error {
+	return ps.coll(db).Find(bson.M{"storeid": storeID}).All(ps)
 }
 
 //Find all purchases.
