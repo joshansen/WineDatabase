@@ -16,7 +16,7 @@
                 <label>Wine <a href="/wine?prev=purchase" class="small">Add</a></label>
                 <select name="Wine" class="form-control" required>
                     {{range $wine := .Wines}}
-                    <option value="{{$wine.Id.Hex}}">{{$wine.Winery}} {{with $wine.Name }}{{ . }} {{ $wine.Variety.Name }}{{end}}</option>
+                    <option value="{{$wine.Id.Hex}}">{{$wine.Winery}} {{with $wine.Name }}{{ . }} {{end}}</option>
                     {{end}}
                 </select>
             </div>

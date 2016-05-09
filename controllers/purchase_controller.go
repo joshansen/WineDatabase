@@ -48,16 +48,43 @@ func (pc *PurchaseControllerImpl) single(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	//Create empty purchase record.
+	//Create empty purchase, wine, store, and variety records.
 	purchase := new(models.Purchase)
+	wine := new(models.Wine)
+	store := new(models.Store)
+	variety := new(models.Variety)
 
 	//Get a database connection.
 	db := pc.database.Get(r)
 
-	//Populate the created purchase record by querying the database.
+	//Populate the created purchase, wine, and variety records by querying the database.
 	if err := purchase.FindByID(bson.ObjectIdHex(mux.Vars(r)["id"]), db); err != nil {
 		http.Error(w, "No such purchase.", http.StatusBadRequest)
 		return
+	}
+	if err := wine.FindByID(purchase.WineID, db); err != nil {
+		http.Error(w, "Could not find associated wine.", http.StatusBadRequest)
+		return
+	}
+	if err := store.FindByID(purchase.StoreID, db); err != nil {
+		http.Error(w, "Could not find associated store.", http.StatusBadRequest)
+		return
+	}
+	if err := variety.FindByID(wine.VarietyID, db); err != nil {
+		http.Error(w, "Could not find associated variety.", http.StatusBadRequest)
+		return
+	}
+
+	data := struct {
+		Purchase *models.Purchase
+		Wine     *models.Wine
+		Store    *models.Store
+		Variety  *models.Variety
+	}{
+		purchase,
+		wine,
+		store,
+		variety,
 	}
 
 	//Parse and execute the views/purchase.html template.
@@ -65,7 +92,7 @@ func (pc *PurchaseControllerImpl) single(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		fmt.Printf("The following error occurred when parsing purchase.html: %v", err)
 	}
-	err = t.Execute(w, purchase)
+	err = t.Execute(w, data)
 	if err != nil {
 		fmt.Printf("The following error occurred when executing purchase.html: %v", err)
 	}
@@ -137,8 +164,7 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 		fmt.Printf("Could not find wine: %v", err)
 		return
 	}
-	po.Wine = *wine
-	po.WineID = po.Wine.Id
+	po.WineID = wine.Id
 
 	//Lookup and add store to purchase record
 	store := new(models.Store)
@@ -146,8 +172,7 @@ func (pc *PurchaseControllerImpl) create(w http.ResponseWriter, r *http.Request)
 		fmt.Printf("Could not find store: %v", err)
 		return
 	}
-	po.Store = *store
-	po.StoreID = po.Store.Id
+	po.StoreID = store.Id
 
 	//Add BuyAgain to the record.
 	switch r.FormValue("BuyAgain") {

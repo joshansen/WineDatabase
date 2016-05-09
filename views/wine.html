@@ -33,24 +33,24 @@
     <div class="row">
         <div class="col-sm-12">
             <h1>
-                {{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Wine.Variety.Name }}<br/>
+                {{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Variety.Name }}<br/>
                 <small>{{ .Wine.Style }} wine{{with .Wine.Region}} from {{ . }}{{end}}</small>
             </h1>
             <!-- TODO display partial stars without rounding -->
-            <span class="rating" rating="{{printf "%.1f" .Stats.AvgRating }}"></span>
-            <strong>&nbsp;&nbsp;&nbsp;Best: {{ .Stats.BestYears }}</strong>
+            <span class="rating" rating="{{printf "%.1f" .Wine.AvgRating }}"></span>
+            <strong>&nbsp;&nbsp;&nbsp;Best: {{ .Wine.BestYears }}</strong>
         </div>
         {{with .Wine.Information}}
             <div class="row text-center col-sm-10 col-sm-offset-1">
                     <em style="font-size:1.6rem">{{ . }}</em><br/><br/>
             </div>
         {{end}}
-        {{with .Stats.LastImage}}
+        {{with .Wine.LastImage}}
             <div class="col-sm-6 col-sm-push-6">
                 <img src="//data.wineapp.org/{{.}}" alt="Bottle Image" class="img-responsive">
             </div>
         {{end}}
-        <div class="col-sm-6 {{with .Stats.LastImage}}col-sm-pull-6{{end}}">
+        <div class="col-sm-6 {{with .Wine.LastImage}}col-sm-pull-6{{end}}">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <strong  style="font-size:1.6rem;">Price Information</strong>
@@ -61,7 +61,11 @@
                             <strong>Lowest Regular</strong>
                         </div>
                         <div class="col-sm-8">
-                            <a href="/purchase/{{ .Stats.MinRegularPurchase.Id.Hex }}">${{printf "%.2f" .Stats.MinRegularPrice }} at {{ .Stats.MinRegularPurchase.Store.Name }}</a>
+                            {{if ne .Wine.MinRegularPrice 0.0}}
+                                <a href="/purchase/{{ .Wine.MinRegularSlug }}">${{printf "%.2f" .Wine.MinRegularPrice }}</a>
+                            {{else}}
+                                Only bought on sale
+                            {{end}}
                         </div>
                     </div>
                     <div class="row">
@@ -69,7 +73,11 @@
                             <strong>Lowest On Sale</strong>
                         </div>
                         <div class="col-sm-8">
-                            <a href="/purchase/{{ .Stats.MinSalePurchase.Id.Hex }}">${{printf "%.2f" .Stats.MinSalePrice }} at {{ .Stats.MinSalePurchase.Store.Name }}</a>
+                            {{if ne .Wine.MinSalePrice 0.0}}
+                                <a href="/purchase/{{ .Wine.MinSaleSlug }}">${{printf "%.2f" .Wine.MinSalePrice }}</a>
+                            {{else}}
+                                Never bought on sale
+                            {{end}}
                         </div>
                     </div>
                     <div class="row">
@@ -77,7 +85,7 @@
                             <strong>Highest</strong>
                         </div>
                         <div class="col-sm-8">
-                            <a href="/purchase/{{ .Stats.MaxPurchase.Id.Hex }}">${{printf "%.2f" .Stats.MaxPrice }} at {{ .Stats.MaxPurchase.Store.Name }}</a>
+                            <a href="/purchase/{{ .Wine.MaxSlug }}">${{printf "%.2f" .Wine.MaxPrice }}</a>
                         </div>
                     </div>
                     <!-- FUTUREUPGRADE Price Histogram (average on graph)<br> -->
@@ -85,6 +93,7 @@
             </div>
             <div id="map" class="visible-sm-block visible-md-block visible-lg-block"></div>
             <script src="//maps.googleapis.com/maps/api/js?v=3.exp"></script>
+            <!-- TODO: Modify so this isn't super zoomed in when only one point. -->
             <script>
                 var map = new google.maps.Map(document.getElementById('map')),
                     markers = [],
@@ -96,14 +105,14 @@
                 var stores =[
                     {{range $store := .Stores}}
                         {
-                            name: {{$store.Store.Name}},
-                            address: {{$store.Store.Address}} + "<br>" + {{$store.Store.City}} + ", " + {{$store.Store.State}} + " " + {{$store.Store.Zip}},
-                            lat: {{$store.Store.Lattitude}},
-                            lng: {{$store.Store.Longitutde}},
-                            website: {{$store.Store.Website}},
-                            lastPurchase: {{$store.Store.LastPurchased.Format "Jan 2, 2006" }},
-                            numPurchased: {{$store.Store.NumPurchased}},
-                            minPrice: "$" + {{printf "%.2f" $store.Store.MinPrice}},
+                            name: {{$store.Name}},
+                            address: {{$store.Address}} + "<br>" + {{$store.City}} + ", " + {{$store.State}} + " " + {{$store.Zip}},
+                            lat: {{$store.Lattitude}},
+                            lng: {{$store.Longitutde}},
+                            website: {{$store.Website}},
+                            lastPurchase: {{$store.LastPurchased.Format "Jan 2, 2006" }},
+                            numPurchased: {{$store.NumPurchased}},
+                            minPrice: "$" + {{printf "%.2f" $store.MinPrice}},
                         },
                     {{end}}
                 ];
@@ -138,14 +147,13 @@
     {{range $store := .Stores }}
         <div class="col-sm-12 row">
             <div class="panel panel-default">
-                <div class="panel-heading"><strong style="font-size:1.6rem;"><a href="/store/{{ $store.Store.Id.Hex }}">{{ $store.Store.Name }} - {{ $store.Store.City }}</a></strong></div>
+                <div class="panel-heading"><strong style="font-size:1.6rem;"><a href="/store/{{ $store.Id.Hex }}">{{ $store.Name }} - {{ $store.City }}</a></strong></div>
                 <div class="panel-body">
                     {{range $index, $purchase := $store.Purchases}}
                         <div class="purchase col-sm-4">
+                        {{if ge $index 3}}<hr class="hidden-xs">{{end}}
                         {{if ne $index 0}}<hr class="hidden-sm hidden-md hidden-lg">{{end}}
-                            <div>
-                                <strong><a href="/purchase/{{$purchase.Id.Hex}}">{{ $purchase.DatePurchased.Format "January 2, 2006" }}</a></strong>
-                            </div>
+                            <div><strong><a href="/purchase/{{$purchase.Id.Hex}}">{{ $purchase.DatePurchased.Format "January 2, 2006" }}</a></strong></div>
                             <em>{{ $purchase.Year }} Vintage</em><br>
                             <span class="rating" rating="{{ $purchase.Rating }}"></span>{{with $purchase.BuyAgain }}<strong>&nbsp;&nbsp;&nbsp;Buy again!</strong>{{end}}<br>
                             <div class="row">

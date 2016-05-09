@@ -8,12 +8,12 @@
 {{ end }}
 <!-- Body -->
 {{ define "body" }}
-    <h1>{{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Wine.Variety.Name }} ({{ .Year }})<br/>
-        <small>Bought {{if not .DatePurchased.IsZero }}{{ .DatePurchased.Format "January 2, 2006"}}{{end}} from {{ .Store.Name }}
+    <h1>{{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Variety.Name }} ({{ .Purchase.Year }})<br/>
+        <small>Bought {{if not .Purchase.DatePurchased.IsZero }}{{ .Purchase.DatePurchased.Format "January 2, 2006"}}{{end}} from {{ .Store.Name }}
         </small>
     </h1>
     <span id="rating"></span>
-    {{with .BuyAgain}}
+    {{with .Purchase.BuyAgain}}
         <strong>&nbsp;&nbsp;&nbsp;Buy again!</strong>
     {{ end }}<br/><br>
     {{with .Wine.Information}}
@@ -21,15 +21,15 @@
                 <em style="font-size:1.6rem">{{ . }}</em><br/><br/>
         </div>
     {{end}}
-    {{with .ImageOriginalURL}}
+    {{with .Purchase.ImageOriginalURL}}
         <div class="col-sm-6 col-sm-push-6">
             <img src="//data.wineapp.org/{{ . }}" alt="Purchase Bottle Image" class="img-responsive">
         </div>
     {{end}}
-    <div class="col-sm-6 {{with .ImageOriginalURL}}col-sm-pull-6{{end}}">
+    <div class="col-sm-6 {{with .Purchase.ImageOriginalURL}}col-sm-pull-6{{end}}">
         <div class="well">
             <div style="padding-bottom:.75rem">
-                <a href="/wine/{{.Wine.Id.Hex}}" style="font-size:1.6rem;">{{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Wine.Variety.Name }}</a>
+                <a href="/wine/{{.Wine.Id.Hex}}" style="font-size:1.6rem;">{{.Wine.Winery}} {{with .Wine.Name }}{{ . }} {{end}}{{ .Variety.Name }}</a>
             </div>
             <div class="row">
                 <div class="col-sm-4">
@@ -54,7 +54,7 @@
                     <strong>Price</strong>
                 </div>
                 <div class="col-sm-8">
-                    ${{printf "%.2f" .Price}}{{with .OnSale }} (On sale){{end}}
+                    ${{printf "%.2f" .Purchase.Price}}{{with .Purchase.OnSale }} (On sale){{end}}
                 </div>
             </div>
             <div class="row">
@@ -62,7 +62,7 @@
                     <strong>Purchased</strong>
                 </div>
                 <div class="col-sm-8">
-                    {{ .DatePurchased.Format "January 2, 2006"}}
+                    {{ .Purchase.DatePurchased.Format "January 2, 2006"}}
                 </div>
             </div>
             <div class="row">
@@ -70,10 +70,10 @@
                     <strong>Drank</strong>
                 </div>
                 <div class="col-sm-8">
-                    {{if not .DateDrank.IsZero }}{{ .DateDrank.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
+                    {{if not .Purchase.DateDrank.IsZero }}{{ .Purchase.DateDrank.Format "January 2, 2006"}}{{else}}Not Entered{{end}}
                 </div>
             </div>
-            {{with .MemoryCue}}
+            {{with .Purchase.MemoryCue}}
                 <div class="row">
                     <div class="col-sm-4">
                         <strong>Memory Cue</strong>
@@ -83,7 +83,7 @@
                     </div>
                 </div>
             {{end}}
-            {{with .Notes}}
+            {{with .Purchase.Notes}}
                 <div class="row">
                     <div class="col-sm-4">
                         <strong>Notes</strong>
@@ -157,7 +157,7 @@
         size: 24,
         hints: ["Bad", "Poor", "Regular", "Good", "Great"],
         readOnly: true,
-        score: {{ .Rating }},
+        score: {{ .Purchase.Rating }},
     });
     </script>
 {{ end }}

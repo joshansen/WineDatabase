@@ -38,15 +38,21 @@ func (sc *StoreControllerImpl) Register(router *mux.Router) {
 //Create three types that will be used to create the list of purchases grouped by wine.
 type wineWithStats struct {
 	models.Wine
-	LastPurchased time.Time
-	NumPurchased  int
-	MinPrice      float64
+	LastPurchasedAtStore  time.Time
+	NumPurchasedFromStore int
+	MinStorePrice         float64
+	AvgStorePrice         float64
 }
 type purchasesByWine struct {
-	Wine      wineWithStats
+	wineWithStats
 	Purchases []models.Purchase
 }
 type purchasesByWines []purchasesByWine
+type winesByVariety struct {
+	models.Variety
+	Wines purchasesByWines
+}
+type winesByVarieties []winesByVariety
 
 //purchasesByWine Len method returns the length of the purchases slice.
 func (p purchasesByWine) Len() int {
@@ -70,12 +76,27 @@ func (ps purchasesByWines) Len() int {
 
 //purchasesByWines Swap method compares purchasesByWine records by wine name.
 func (ps purchasesByWines) Less(i, j int) bool {
-	return ps[i].Wine.Name < ps[j].Wine.Name
+	return ps[i].Name < ps[j].Name
 }
 
 //purchasesByWines Swap method swaps purchasesByWine records.
 func (ps purchasesByWines) Swap(i, j int) {
 	ps[i], ps[j] = ps[j], ps[i]
+}
+
+//winesByVarieties Len method returns the length of the slice.
+func (ws winesByVarieties) Len() int {
+	return len(ws)
+}
+
+//winesByVarieties Swap method compares winesByVarieties records by variety name.
+func (ws winesByVarieties) Less(i, j int) bool {
+	return ws[i].Name < ws[j].Name
+}
+
+//winesByVarieties Swap method swaps winesByVarieties records.
+func (ws winesByVarieties) Swap(i, j int) {
+	ws[i], ws[j] = ws[j], ws[i]
 }
 
 //single serves the store page associated with the store id in the /store/{id} URL.
@@ -107,64 +128,108 @@ func (sc *StoreControllerImpl) single(w http.ResponseWriter, r *http.Request) {
 
 	//Initilize variables to be used when grouping purchases by wine.
 	var wines purchasesByWines
-	var match bool
+	var wineMatch bool
+	var wine models.Wine
 
 	//Loop through all purchases to group them by wine.
 	for _, purchase := range *purchases {
 		//Initialize match to false on first pass through loop.
-		match = false
+		wineMatch = false
 
 		//Loop through the existing array of wines.
 		for wineIndex, wine := range wines {
 			//If Wine Id's Match, add purchase
-			if wine.Wine.Id == purchase.Wine.Id {
+			if wine.Id == purchase.WineID {
 				wines[wineIndex].Purchases = append(wine.Purchases, purchase)
-				match = true
+				wineMatch = true
+				//break out of wine look
 				break
 			}
 		}
 		//If no match was found, append the wine and purchase.
-		if !match {
-			wines = append(wines, purchasesByWine{wineWithStats{purchase.Wine, time.Time{}, 0, 0.0}, []models.Purchase{purchase}})
+		if !wineMatch {
+			if err := wine.FindByID(purchase.WineID, db); err != nil {
+				http.Error(w, "Error finding an associated wine record.", http.StatusBadRequest)
+				return
+			}
+			wines = append(wines, purchasesByWine{wineWithStats{wine, time.Time{}, 0, 0.0, 0.0}, []models.Purchase{purchase}})
 		}
 	}
 
-	//Sort wines in alphabetical order.
-	sort.Sort(wines)
+	//Initialize variables to be used when grouping wines by variety.
+	var varieties winesByVarieties
+	var varietyMatch bool
+	var variety models.Variety
 
-	//Loop over wine purchases to calculate wine specific statistics.
-	for wineIndex, wine := range wines {
-		//Set NumPurchased to the length of the purchases slice.
-		wines[wineIndex].Wine.NumPurchased = len(wine.Purchases)
-		//Sort purchases in order of most recently purchased to least recently purchased.
-		sort.Sort(wines[wineIndex])
+	for _, wine := range wines {
+		varietyMatch = false
+		//Loop through the existing array of varieties.
+		for varietyIndex, variety := range varieties {
+			if variety.Id == wine.VarietyID {
+				varieties[varietyIndex].Wines = append(variety.Wines, wine)
+				varietyMatch = true
+				break
+			}
+		}
+		if !varietyMatch {
+			if err := variety.FindByID(wine.VarietyID, db); err != nil {
+				http.Error(w, "Error finding an associated variety record.", http.StatusBadRequest)
+				return
+			}
+			varieties = append(varieties, winesByVariety{variety, purchasesByWines{wine}})
+		}
+	}
 
-		//Loop over all purchases for wine.
-		for _, purchase := range wine.Purchases {
-			//Update LastPurchased if DatePurchased is before LastPurchased.
-			if wines[wineIndex].Wine.LastPurchased.Before(purchase.DatePurchased) {
-				wines[wineIndex].Wine.LastPurchased = purchase.DatePurchased
+	//Sort varieities alphabetically
+	sort.Sort(varieties)
+
+	//Initialize sumPrice variable
+	var sumPrice float64
+
+	//Loop over varieties
+	for varietyIndex, variety := range varieties {
+		//Sort wines in alphabetical order.
+		sort.Sort(varieties[varietyIndex].Wines)
+
+		//Loop over wines to calculate wine specific statistics.
+		for wineIndex, wine := range variety.Wines {
+			//Set NumPurchasedFromStore to the length of the purchases slice.
+			varieties[varietyIndex].Wines[wineIndex].NumPurchasedFromStore = len(wine.Purchases)
+			//Sort purchases in order of most recently purchased to least recently purchased.
+			sort.Sort(varieties[varietyIndex].Wines[wineIndex])
+
+			sumPrice = 0.0
+
+			//Loop over all purchases for wine.
+			for _, purchase := range wine.Purchases {
+				//Sum the price of wines
+				sumPrice += purchase.Price
+				//Update LastPurchasedAtStore if DatePurchased is before LastPurchasedAtStore.
+				if varieties[varietyIndex].Wines[wineIndex].LastPurchasedAtStore.Before(purchase.DatePurchased) {
+					varieties[varietyIndex].Wines[wineIndex].LastPurchasedAtStore = purchase.DatePurchased
+				}
+				//Set MinStorePrice to a purchased price to initialize.
+				if varieties[varietyIndex].Wines[wineIndex].MinStorePrice == 0 {
+					varieties[varietyIndex].Wines[wineIndex].MinStorePrice = purchase.Price
+				}
+				//Update MinStorePrice if purchase price is less than MinStorePrice.
+				if varieties[varietyIndex].Wines[wineIndex].MinStorePrice > purchase.Price {
+					varieties[varietyIndex].Wines[wineIndex].MinStorePrice = purchase.Price
+				}
 			}
-			//Set MinPrice to a purchased price to initialize.
-			if wines[wineIndex].Wine.MinPrice == 0 {
-				wines[wineIndex].Wine.MinPrice = purchase.Price
-			}
-			//Update MinPrice if purchase price is less than MinPrice.
-			if wines[wineIndex].Wine.MinPrice > purchase.Price {
-				wines[wineIndex].Wine.MinPrice = purchase.Price
-			}
+
+			//Calculate average price
+			varieties[varietyIndex].Wines[wineIndex].AvgStorePrice = sumPrice / float64(varieties[varietyIndex].Wines[wineIndex].NumPurchasedFromStore)
 		}
 	}
 
 	//Create an anonymous struct that will be used to pass the populated store, purchases, and wines records to the page.
 	data := struct {
 		Store     *models.Store
-		Purchases *models.Purchases
-		Wines     purchasesByWines
+		Varieties winesByVarieties
 	}{
 		store,
-		purchases,
-		wines,
+		varieties,
 	}
 
 	//Parse and execute the views/store.html template.

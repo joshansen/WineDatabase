@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"time"
@@ -11,9 +12,7 @@ type Purchase struct {
 	Id               bson.ObjectId `bson:"_id"`
 	CreatedDate      time.Time
 	ModifiedDate     time.Time
-	Wine             Wine
 	WineID           bson.ObjectId
-	Store            Store
 	StoreID          bson.ObjectId
 	Rating           int
 	BuyAgain         bool
@@ -31,7 +30,15 @@ type Purchase struct {
 //Save the purchase record to the database.
 func (p *Purchase) Save(db *mgo.Database) error {
 	_, err := p.coll(db).UpsertId(p.Id, p)
-	return err
+	if err != nil {
+		return err
+	}
+	//Update wine
+	wine := new(Wine)
+	if err := wine.FindByID(p.WineID, db); err != nil {
+		return errors.New("Could not find associated wine.")
+	}
+	return wine.calculateStats(db)
 }
 
 //Return a purchase record given its ID.
